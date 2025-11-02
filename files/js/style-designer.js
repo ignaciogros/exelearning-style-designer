@@ -1,8 +1,13 @@
-const sd = {
-    init : function(){
+(() => {
+    const sd = window.sd || {
+        init() {
+            // Placeholder for future hooks
+        }
+    };
 
-        // Not used yet
-
+    if (typeof sd.init === 'function') {
+        sd.init();
     }
-}
-sd.init();
+
+    window.sd = sd;
+})();

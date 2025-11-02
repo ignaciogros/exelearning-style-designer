@@ -37,51 +37,31 @@ It does not include the necessary security measures. This tool is intended solel
 
 ---
 
-## Installation
+## Serving the Tool
 
-### 1. Docker (Recommended)
+Any static server works; the examples below cover the most common options:
 
-This is the easiest way to run the application without installing PHP or Apache locally.
+- **Node.js (http-server)**
+  ```bash
+  npm install --global http-server        # once
+  http-server -p 8080                     # from the project root
+  ```
+  Navigate to `http://127.0.0.1:8080/`.
 
-1. Make sure **Docker Desktop** is installed and running.  
-2. Clone or download this repository.  
-3. Navigate to the project root in a terminal.  
-4. Build and start the container:
+- **PHP built-in web server**
+  ```bash
+  php -S 127.0.0.1:8080
+  ```
 
-```bash
-docker-compose up --build
-```
+- **Python 3 (http.server)**
+  ```bash
+  python3 -m http.server 8080
+  ```
 
-5. Open your browser and visit:
+- **Any other static server**
+  Point Apache, Nginx, Caddy, etc. at the repository root; no rewrite rules are required.
 
-```
-http://localhost:8000/
-```
-
-> You can change the port mapping in `docker-compose.yml` if needed.
-
----
-
-### 2. Direct Installation on Apache
-
-If you prefer to run the application directly on a local Apache server:
-
-1. Make sure you have **PHP 8+** and Apache installed.  
-2. Copy the project files to your Apache document root (e.g., `htdocs` or `www`).  
-3. Ensure the `path-to-project/` folder is accessible via your browser.  
-4. Adjust PHP settings if needed for large file uploads:
-
-```ini
-upload_max_filesize = 50M
-post_max_size = 50M
-memory_limit = 128M
-```
-
-5. Open your browser and visit:
-
-```
-http://localhost/path-to-project/index.php
-```
+> **Tip:** When you change code, do a hard refresh (`Ctrl`/`Cmd` + `Shift` + `R`) so the updated service worker and assets reload.
 
 ---
 

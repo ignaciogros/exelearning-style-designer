@@ -1,36 +1,73 @@
 body{
     margin: 0;
-    padding: 52px 0 0 0;
-    height: 100vh;
-    overflow-y: hidden;
+    padding: 64px 0 0 0;
+    min-height: 100vh;
+    background-color: #f9f9fb;
+}
+.designer-page .designer-main{
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.designer-page #previewPanel{
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+.page-content{
+    padding: 24px;
 }
 #sdHeader{
     background: #2B2A33 url(../exelearning.png) no-repeat 20px 50%;
     background-size: auto 32px;
     border-bottom: 1px solid #0C0C0D;
-    display: block;
     width: 100%;
-    text-align: center;
-    padding: 10px;
-    position: absolute;
+    padding: 10px 16px 10px 68px;
+    position: fixed;
     top: 0;
-    height: 52px;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
 }
-iframe {
+#sdHeader .nav-group,
+#sdHeader .view-group,
+#sdHeader .config-group,
+#sdHeader .action-group{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+#sdHeader .nav-group{
+    flex: 1 1 auto;
+}
+#sdHeader .view-group{
+    flex: 0 0 auto;
+}
+#sdHeader .config-group{
+    flex: 0 0 auto;
+}
+#sdHeader .action-group{
+    margin-left: auto;
+}
+#previewPanel iframe {
     width: 100%;
-    height: calc(100vh - 52px);
+    height: calc(100vh - 64px);
+    border: none;
+    background-color: #fff;
 }
-#done {
-    float: right;
-    margin-left: .5em;
-}
-#_blank {
-    float: right;
+.designer-page #configPanel{
+    max-width: 720px;
+    margin: 0 auto;
 }
 .btn.mw {
     min-width: 100px;
 }
-#_blank img{
+#openNewWindow img{
     position: relative;
     top: -2px;
 }

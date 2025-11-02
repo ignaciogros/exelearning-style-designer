@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex">
+        <title>Style Designer</title>
+        <link rel="icon" href="../files/favicon.ico">
+        <link rel="stylesheet" href="../files/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../files/css/style-designer.css">
+        <script defer src="../files/js/bootstrap.bundle.min.js"></script>
+        <script defer src="../files/js/style-storage.js"></script>
+        <script>
+            window.styleDesignerConfig = {
+                defaultEntry: localStorage.getItem('style-designer-default-entry') || 'index.html'
+            };
+        </script>
+        <script defer src="../files/js/viewer.js"></script>
+    </head>
+    <body class="designer-page">
+        <header id="sdHeader">
+            <div class="nav-group btn-group btn-group-sm" role="group" aria-label="Main navigation">
+                <a class="btn btn-outline-light" href="../upload/index.html">Upload</a>
+                <a class="btn btn-outline-light active" aria-current="page" href="./index.html">Designer</a>
+                <a class="btn btn-outline-light" href="../download/index.html">Download</a>
+            </div>
+            <div class="view-group btn-group btn-group-sm" id="viewSelector" role="group" aria-label="Content view" hidden>
+                <button type="button" class="btn btn-light" data-view="web">Website</button>
+                <button type="button" class="btn btn-light" data-view="page">Single page</button>
+                <button type="button" class="btn btn-light" data-view="scorm">SCORM 1.2</button>
+            </div>
+            <div class="config-group btn-group btn-group-sm">
+                <button type="button" class="btn btn-light" id="configTab" aria-pressed="false">Theme configuration</button>
+            </div>
+            <div class="action-group">
+                <button type="button" class="btn btn-outline-light btn-sm" id="openNewWindow" title="Open in new window" disabled>
+                    <img src="../files/img/new-window.svg" width="24" height="24" alt="New window"><span class="visually-hidden">New window</span>
+                </button>
+            </div>
+        </header>
+        <main class="container-fluid py-3 designer-main">
+            <div id="previewPanel">
+                <iframe id="viewer" title="Content preview" hidden></iframe>
+                <div class="container p-4" id="emptyState" hidden>
+                    <h1 class="visually-hidden">Style Designer</h1>
+                    <div class="alert alert-info">
+                        No contents available…
+                    </div>
+                    <p>Upload the exported packages in the <strong>Upload</strong> page and come back to preview them here.</p>
+                </div>
+            </div>
+            <section class="card shadow-sm d-none" id="configPanel">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Theme Configuration</h2>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="resetConfig">Reset</button>
+                    </div>
+                    <div id="configMessages" aria-live="polite"></div>
+                    <form id="configForm" novalidate>
+                        <div class="mb-2">
+                            <label for="configName" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="configName" name="name" required pattern="^[A-Za-z0-9_\-]+$" maxlength="60">
+                            <div class="invalid-feedback">Use only letters, numbers, hyphens or underscores.</div>
+                            <div class="form-text">Only letters, numbers, hyphens and underscores.</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="configTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="configTitle" name="title" required maxlength="120">
+                            <div class="invalid-feedback">Title is required.</div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-sm-6">
+                                <label for="configVersion" class="form-label">Version</label>
+                                <input type="text" class="form-control form-control-sm" id="configVersion" name="version" maxlength="20">
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="configCompatibility" class="form-label">Compatibility</label>
+                                <input type="text" class="form-control form-control-sm" id="configCompatibility" name="compatibility" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="mb-2 mt-2">
+                            <label for="configAuthor" class="form-label">Author</label>
+                            <input type="text" class="form-control form-control-sm" id="configAuthor" name="author" maxlength="120">
+                        </div>
+                        <div class="mb-2">
+                            <label for="configLicense" class="form-label">License</label>
+                            <input type="text" class="form-control form-control-sm" id="configLicense" name="license" maxlength="120">
+                        </div>
+                        <div class="mb-2">
+                            <label for="configLicenseUrl" class="form-label">License URL</label>
+                            <input type="text" class="form-control form-control-sm" id="configLicenseUrl" name="license-url" maxlength="200">
+                        </div>
+                        <div class="mb-2">
+                            <label for="configDescription" class="form-label">Description</label>
+                            <textarea class="form-control form-control-sm" id="configDescription" name="description" rows="6" maxlength="1000"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="configDownloadable" class="form-label">Downloadable</label>
+                            <select class="form-select form-select-sm" id="configDownloadable" name="downloadable">
+                                <option value="0">0 - Not downloadable</option>
+                                <option value="1">1 - Downloadable</option>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">Save config.xml</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="downloadConfig">Download XML</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>
