@@ -1,0 +1,8 @@
+services:
+  php-web:
+    build: .
+    container_name: exelearning-style-designer
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html

@@ -1,0 +1,45 @@
+body{
+    margin: 0;
+    padding: 52px 0 0 0;
+    height: 100vh;
+    overflow-y: hidden;
+}
+#sdHeader{
+    background: #2B2A33 url(../exelearning.png) no-repeat 20px 50%;
+    background-size: auto 32px;
+    border-bottom: 1px solid #0C0C0D;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    position: absolute;
+    top: 0;
+    height: 52px;
+}
+iframe {
+    width: 100%;
+    height: calc(100vh - 52px);
+}
+#done {
+    float: right;
+    margin-left: .5em;
+}
+#_blank {
+    float: right;
+}
+.btn.mw {
+    min-width: 100px;
+}
+#_blank img{
+    position: relative;
+    top: -2px;
+}
+.btn-primary {
+    background-color: #0ba1a1;
+    border-color: #0ba1a1;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #107275;
+    border-color: #107275;
+}
