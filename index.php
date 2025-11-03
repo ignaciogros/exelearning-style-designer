@@ -44,7 +44,22 @@
             <?php } ?>
         </div>
         <?php if (is_dir('contents')) { ?>
-        <iframe width="800" height="600" src="contents/web/<?php if ($defaultIndexFile != 'index.html') echo 'html/'; ?><?php echo $defaultIndexFile; ?>" id="viewer"></iframe>
+            <?php
+                $url = 'contents/web/';
+                if ($defaultIndexFile != 'index.html') $url .= 'html/';
+                $url .= $defaultIndexFile;
+            ?>
+            <?php if (file_exists($url)) { ?>
+            <iframe width="800" height="600" src="<?php echo $url; ?>" id="viewer"></iframe>
+            <?php } else { ?>
+            <div class="container p-4">
+                <h1 class="visually-hidden">Style Designer</h1>
+                <div class="alert alert-warning">
+                    The "contents" folder exists, but the required HTML is not found.
+                </div>
+                <p>Click on "Done" to delete all previous files and follow the instructions.</p>
+            </div>
+            <?php } ?>
         <?php } else { ?>
         <div class="container p-4">
             <h1 class="visually-hidden">Style Designer</h1>

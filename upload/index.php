@@ -9,15 +9,69 @@ $uploadDir = __DIR__;
 $contentsDir = $rootDir . '/contents';
 $themeTargetDir = $rootDir . '/theme';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $allowedSuffixes = ['_page', '_scorm', '_web'];
-    $folderNames = ['page', 'scorm', 'web'];
-    $messages = [];
+$messages = [];  // Feedback messages to display in HTML
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $allowedSuffixes = ['_page.zip', '_scorm.zip', '_web.zip'];
+    $folderNames = ['page', 'scorm', 'web'];
+    $valid = true;
+
+    // 1. Check POST size limit
+    if (!empty($_SERVER['CONTENT_LENGTH']) && $_SERVER['CONTENT_LENGTH'] > (int)ini_get('post_max_size') * 1024 * 1024) {
+        $messages[] = ['type' => 'danger', 'text' => 'The uploaded files exceed the maximum size allowed by the server (post_max_size).'];
+        $valid = false;
+    }
+
+    // 2. Check if any file was uploaded at all
     if (!isset($_FILES['zipFiles'])) {
-        $messages[] = ['type' => 'danger', 'text' => 'No files uploaded.'];
+        $messages[] = ['type' => 'danger', 'text' => 'No files were uploaded.'];
+        $valid = false;
     } else {
-        // Delete existing root-level contents and theme folders if they exist
+        // Remove empty values (browsers may submit empty file inputs)
+        $uploadedNames = array_filter($_FILES['zipFiles']['name']);
+        if (count($uploadedNames) === 0) {
+            $messages[] = ['type' => 'danger', 'text' => 'No files were uploaded.'];
+            $valid = false;
+        }
+    }
+
+    // 3. Ensure exactly 3 files are uploaded
+    if ($valid && count($uploadedNames) !== 3) {
+        $messages[] = ['type' => 'danger', 'text' => 'You must upload exactly 3 .zip files.'];
+        $valid = false;
+    }
+
+    // 4. Ensure all uploaded files have .zip extension
+    if ($valid) {
+        foreach ($uploadedNames as $fileName) {
+            if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) !== 'zip') {
+                $messages[] = ['type' => 'danger', 'text' => 'Only .zip files are allowed. "' . $fileName . '" is not a zip file.'];
+                $valid = false;
+                break;
+            }
+        }
+    }
+
+    // 5. Ensure required suffixes exist (_page.zip, _scorm.zip, _web.zip)
+    if ($valid) {
+        $uploadedSuffixes = [];
+        foreach ($uploadedNames as $fileName) {
+            foreach ($allowedSuffixes as $suffix) {
+                if (str_ends_with($fileName, $suffix)) {
+                    $uploadedSuffixes[] = $suffix;
+                }
+            }
+        }
+        if (count(array_unique($uploadedSuffixes)) !== 3) {
+            $messages[] = ['type' => 'danger', 'text' => 'File names must include suffixes: _page.zip, _scorm.zip, and _web.zip (each once).'];
+            $valid = false;
+        }
+    }
+
+    // 6. Only process files if all validations passed
+    if ($valid) {
+
+        // Delete existing /contents and /theme directories
         if (is_dir($contentsDir)) {
             exec("rm -rf " . escapeshellarg($contentsDir));
         }
@@ -25,50 +79,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exec("rm -rf " . escapeshellarg($themeTargetDir));
         }
 
-        // Create fresh contents directory
+        // Create new /contents folder only if it doesn't exist
         if (!is_dir($contentsDir)) {
             mkdir($contentsDir, 0777, true);
         }
 
-        // Process uploaded ZIP files
+        // Process and extract ZIP files
         foreach ($_FILES['zipFiles']['name'] as $index => $fileName) {
             $tmpPath = $_FILES['zipFiles']['tmp_name'][$index];
+            $error = $_FILES['zipFiles']['error'][$index];
+
+            if ($error !== UPLOAD_ERR_OK) {
+                $messages[] = ['type' => 'danger', 'text' => 'Error uploading file: ' . $fileName];
+                continue;
+            }
 
             foreach ($allowedSuffixes as $key => $suffix) {
-                if (str_ends_with($fileName, $suffix . '.zip')) {
+                if (str_ends_with($fileName, $suffix)) {
                     $targetFolder = $contentsDir . '/' . $folderNames[$key];
 
-                    // Remove previous folder if exists (extra safety)
                     if (is_dir($targetFolder)) {
                         exec("rm -rf " . escapeshellarg($targetFolder));
                     }
-
                     // Create target folder only if it doesn't exist
                     if (!is_dir($targetFolder)) {
                         mkdir($targetFolder, 0777, true);
                     }
 
-                    // Extract ZIP
-                    $zip = new ZipArchive;
+                    $zip = new ZipArchive();
                     if ($zip->open($tmpPath) === TRUE) {
                         $zip->extractTo($targetFolder);
                         $zip->close();
-                        unlink($tmpPath); // Delete uploaded zip
+                        unlink($tmpPath);
                     } else {
-                        $messages[] = ['type' => 'danger', 'text' => 'Failed to unzip: ' . $fileName];
+                        $messages[] = ['type' => 'danger', 'text' => 'Failed to unzip file: ' . $fileName];
                     }
                 }
             }
         }
 
-        // Copy theme folder from contents/web to root
-        /**
-         * Recursively copy a directory
-         */
+        // Copy theme folder from /contents/web/theme to /theme
         function copyDir($src, $dst) {
             $dir = opendir($src);
             if (!is_dir($dst)) mkdir($dst, 0777, true);
-            while(false !== ($file = readdir($dir))) {
+            while (false !== ($file = readdir($dir))) {
                 if ($file != '.' && $file != '..') {
                     $srcPath = $src . '/' . $file;
                     $dstPath = $dst . '/' . $file;
@@ -81,22 +135,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             closedir($dir);
         }
+
         $webThemeDir = $contentsDir . '/web/theme';
         if (is_dir($webThemeDir)) {
             copyDir($webThemeDir, $themeTargetDir);
         }
 
-        // --- Replace strings in HTML files ---
+        // Replace HTML script and CSS paths
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($contentsDir));
         foreach ($iterator as $file) {
             if ($file->isFile() && pathinfo($file, PATHINFO_EXTENSION) === 'html') {
                 $content = file_get_contents($file);
 
                 $replacements = [
-                    '<script src="../theme/style.js"> </script>' => '<script>document.write(\'<script src="../../../theme/style.js?v=\'+Date.now()+\'"><\/script>\');</script>',
-                    '<link rel="stylesheet" href="../theme/style.css">' => '<script>document.write(\'<link rel="stylesheet" href="../../../theme/style.css?v=\'+Date.now()+\'">\');</script>',
-                    '<script src="theme/style.js"> </script>' => '<script>document.write(\'<script src="../../theme/style.js?v=\'+Date.now()+\'"><\/script>\');</script>',
-                    '<link rel="stylesheet" href="theme/style.css">' => '<script>document.write(\'<link rel="stylesheet" href="../../theme/style.css?v=\'+Date.now()+\'">\');</script>',
+                    '<script src="../theme/style.js"> </script>' =>
+                        '<script>document.write(\'<script src="../../../theme/style.js?v=\'+Date.now()+\'"><\/script>\');</script>',
+                    '<link rel="stylesheet" href="../theme/style.css">' =>
+                        '<script>document.write(\'<link rel="stylesheet" href="../../../theme/style.css?v=\'+Date.now()+\'">\');</script>',
+                    '<script src="theme/style.js"> </script>' =>
+                        '<script>document.write(\'<script src="../../theme/style.js?v=\'+Date.now()+\'"><\/script>\');</script>',
+                    '<link rel="stylesheet" href="theme/style.css">' =>
+                        '<script>document.write(\'<link rel="stylesheet" href="../../theme/style.css?v=\'+Date.now()+\'">\');</script>',
                 ];
 
                 $content = str_replace(array_keys($replacements), array_values($replacements), $content);
@@ -111,48 +170,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Add success message
         $messages[] = ['type' => 'success', 'text' => 'Processing completed successfully.'];
     }
 }
 ?><!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta name="robots" content="noindex">
-        <meta charset="utf-8">
-        <title>Uploader | Style Designer</title>
-        <link rel="icon" href="../files/favicon.ico">
-        <link rel="stylesheet" href="../files/css/bootstrap.min.css">
-        <script src="../files/js/jquery.min.js"></script>
-        <script src="../files/js/bootstrap.bundle.min.js" defer></script>
-        <link rel="stylesheet" href="../files/css/style-designer.css">
-    </head>
-    <body class="upload">
-        <div id="sdHeader">
-            <a href="../" class="btn btn-outline-light btn-sm mw" id="_blank">Style Designer</a>
+<head>
+    <meta name="robots" content="noindex">
+    <meta charset="utf-8">
+    <title>Uploader | Style Designer</title>
+    <link rel="icon" href="../files/favicon.ico">
+    <link rel="stylesheet" href="../files/css/bootstrap.min.css">
+    <script src="../files/js/jquery.min.js"></script>
+    <script src="../files/js/bootstrap.bundle.min.js" defer></script>
+    <link rel="stylesheet" href="../files/css/style-designer.css">
+</head>
+<body class="upload">
+<div id="sdHeader">
+    <a href="../" class="btn btn-outline-light btn-sm mw" id="_blank">Style Designer</a>
+</div>
+<div class="container p-4">
+    <h1 class="h5 mb-4 visually-hidden">Upload .zip files</h1>
+
+    <!-- Display error/success messages -->
+    <?php if (!empty($messages)): ?>
+        <?php foreach ($messages as $msg): ?>
+            <div class="alert alert-<?php echo htmlspecialchars($msg['type']); ?>">
+                <?php echo htmlspecialchars($msg['text']); ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+    <!-- Upload form -->
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="zipFiles" class="form-label">Select 3 exported .zip files</label>
+            <input type="file" class="form-control" name="zipFiles[]" id="zipFiles" multiple required>
+            <div class="form-text">Files must end with _page.zip, _scorm.zip or _web.zip</div>
         </div>
-        <div class="container p-4">
-            <h1 class="h5 mb-4 visually-hidden">Upload .zip files</h1>
-            <?php if (!empty($messages)): ?>
-                <?php foreach ($messages as $msg): ?>
-                    <div class="alert alert-<?php echo $msg['type']; ?>">
-                        <?php echo htmlspecialchars($msg['text']); ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-            <form method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="zipFiles" class="form-label">Select 3 exported .zip files</label>
-                    <input type="file" class="form-control" name="zipFiles[]" id="zipFiles" multiple required>
-                    <div class="form-text">Files must end with _page.zip, _scorm.zip or _web.zip</div>
-                </div>
-                <button type="submit" class="btn btn-primary">Upload and process</button>
-            </form>
-            <ol class="mt-4 text-muted">
-                <li>Open a content file with eXeLearning 3 and export it in these formats: Website, Single page, SCORM 1.2.<br />Do not change the default names that eXeLearning assigns (they end with _page.zip, _scorm.zip, and _web.zip).</li>
-                <li>Then select the <strong>3 .zip files</strong> and click on "Upload and process."</li>
-                <li>When the process is finished, click on "Style Viewer." There you can see the different views and switch between them easily.</li>
-                <li>You can see the changes by editing the</li>
-            </ol>
-        </div>
+        <button type="submit" class="btn btn-primary">Upload and process</button>
+    </form>
+
+    <!-- Instructions -->
+    <ol class="mt-4 text-muted">
+        <li>Open a content file with eXeLearning 3 and export it in these formats: Website, Single page, SCORM 1.2.</li>
+        <li>Then select the <strong>3 .zip files</strong> and click on "Upload and process."</li>
+        <li>When the process is finished, click on "Style Viewer" to see the different views.</li>
+        <li>Do not change the default names assigned by eXeLearning (they end with _page.zip, _scorm.zip, and _web.zip).</li>
+    </ol>
+</div>
+<script>
+    document.getElementById('zipFiles').addEventListener('change', function() {
+        const files = Array.from(this.files);
+        const requiredSuffixes = ['_page.zip', '_scorm.zip', '_web.zip'];
+        let suffixesFound = [];
+        const errorWrapper = $("#wrongFilesError");
+
+        let errorMsg = ''
+        files.forEach(file => {
+            if (!file.name.endsWith('.zip')) {
+                errorMsg = 'Only .zip files are allowed.';
+                this.value = '';
+                return;
+            }
+            requiredSuffixes.forEach(suffix => {
+                if (file.name.endsWith(suffix)) suffixesFound.push(suffix);
+            });
+        });
+
+        if (files.length !== 3 || new Set(suffixesFound).size !== 3) {
+            if (errorMsg == '') errorMsg = 'You must select exactly 3 ZIP files with the correct suffixes (_page.zip, _scorm.zip, _web.zip).';
+            this.value = '';
+        }
+        if (errorMsg != '') {
+            if (errorWrapper.length == 0) {
+                $('form').before('<div id="wrongFilesError" class="alert alert-danger">' + errorMsg + '</div>');
+            } else {
+                errorWrapper.html(errorMsg);
+            }
+        }
+    });
+</script>
 </body>
 </html>
