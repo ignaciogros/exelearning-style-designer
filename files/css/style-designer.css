@@ -22,17 +22,30 @@ iframe {
 }
 #done {
     float: right;
-    margin-left: .5em;
 }
 #_blank {
     float: right;
 }
-.btn.mw {
-    min-width: 100px;
-}
 #_blank img{
     position: relative;
     top: -2px;
+}
+#exampleLnk {
+    float: right;
+    color: #FFF;
+    text-decoration: none;
+    margin-right: 1em;
+    opacity: .7;
+}
+.index #done + #_blank + #exampleLnk {
+    margin-right: 0;
+}
+#exampleLnk:hover,
+#exampleLnk:focus {
+    text-decoration: underline;
+}
+.btn.mw {
+    min-width: 100px;
 }
 .btn-primary {
     background-color: #0ba1a1;

@@ -12,7 +12,7 @@ With this tool, you can easily edit and customize the look and feel of your eXeL
 
 ## Important Notice
 
-⚠️ **This application must never be used in production.**  
+⚠️ **This application must never be used in production.**
 It does not include the necessary security measures. This tool is intended solely for designers to simplify the creation of styles for eXeLearning 3.
 
 ---
@@ -20,9 +20,9 @@ It does not include the necessary security measures. This tool is intended solel
 ## How to Use
 
 1. Export your eXeLearning project as:
-   - A **Website**  
-   - A **SCORM 1.2**  
-   - A **Single page**  
+   - A **Website**
+   - A **SCORM 1.2**
+   - A **Single page**
    using the style you want to customize.
 
 2. Make sure to enable all project properties (search box, page counter, etc.) to ensure your style remains compatible with those features.
@@ -43,9 +43,9 @@ It does not include the necessary security measures. This tool is intended solel
 
 This is the easiest way to run the application without installing PHP or Apache locally.
 
-1. Make sure **Docker Desktop** is installed and running.  
-2. Clone or download this repository.  
-3. Navigate to the project root in a terminal.  
+1. Make sure **Docker Desktop** is installed and running.
+2. Clone or download this repository.
+3. Navigate to the project root in a terminal.
 4. Build and start the container:
 
 ```bash
@@ -66,9 +66,9 @@ http://localhost:8000/
 
 If you prefer to run the application directly on a local Apache server:
 
-1. Make sure you have **PHP 8+** and Apache installed.  
-2. Copy the project files to your Apache document root (e.g., `htdocs` or `www`).  
-3. Ensure the `path-to-project/` folder is accessible via your browser.  
+1. Make sure you have **PHP 8+** and Apache installed.
+2. Copy the project files to your Apache document root (e.g., `htdocs` or `www`).
+3. Ensure the `path-to-project/` folder is accessible via your browser.
 4. Adjust PHP settings if needed for large file uploads:
 
 ```ini
@@ -87,8 +87,8 @@ http://localhost/path-to-project/index.php
 
 ## Notes
 
-- The tool is intended for **designers only**.  
-- It is **not secure** for production use.  
+- The tool is intended for **designers only**.
+- It is **not secure** for production use.
 - Always test generated styles in a safe environment before deploying to any live site.
 - When you have finished, it is important to **test your Style within eXeLearning** to ensure that its CSS code does not affect the application interface.
 
@@ -104,29 +104,33 @@ This project is licensed under the **AGPL**. You may freely use, modify, and dis
 
 The following third-party resources are included in this project:
 
-- **Example content:** `leer-para-aprender.elpx`  
-  Used to create screenshots of Styles in eXeLearning 3.  
-  Original content created for [CEDEC](https://cedec.intef.es/).  
+- **Example content:** `leer-para-aprender.elpx`
+  Used to create screenshots of Styles in eXeLearning 3.
+  Original content created for [CEDEC](https://cedec.intef.es/).
   License: [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/3.0/)
 
-- **Icon:** `files/img/new-window.svg`  
-  Source: [Google Fonts Icons](https://fonts.google.com/icons)  
+- **Icon:** `files/img/new-window.svg`
+  Source: [Google Fonts Icons](https://fonts.google.com/icons)
   License: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-- **Bootstrap JavaScript:** `files/js/bootstrap.bundle.min.js` and `bootstrap.bundle.min.js.map`  
-  Source: [Bootstrap](https://getbootstrap.com/)  
+- **Bootstrap JavaScript:** `files/js/bootstrap.bundle.min.js` and `bootstrap.bundle.min.js.map`
+  Source: [Bootstrap](https://getbootstrap.com/)
   License: [MIT License](https://github.com/twbs/bootstrap/blob/main/LICENSE)
 
-- **jQuery:** `files/js/jquery.min.js`  
-  Source: [jQuery](https://jquery.com/)  
+- **jQuery:** `files/js/jquery.min.js`
+  Source: [jQuery](https://jquery.com/)
   License: [MIT License](https://jquery.org/license/)
 
-- **Bootstrap CSS:** `files/css/bootstrap.min.css` and `bootstrap.min.css.map`  
-  Source: [Bootstrap](https://getbootstrap.com/)  
+- **Bootstrap CSS:** `files/css/bootstrap.min.css` and `bootstrap.min.css.map`
+  Source: [Bootstrap](https://getbootstrap.com/)
   License: [MIT License](https://github.com/twbs/bootstrap/blob/main/LICENSE)
 
-- **eXeLearning Logo:**  
-  Source: [eXeLearning GitHub](https://github.com/exelearning/exelearning/)  
+- **eXeLearning Logo:**
+  Source: [eXeLearning GitHub](https://github.com/exelearning/exelearning/)
   License: AGPL (same as this project)
+
+- **Open Sans Font:** `files/example.zip/fonts/*`. 
+  Source: [Google Fonts](https://fonts.google.com/specimen/Open+Sans)
+  License: Apache License, Version 2.0
 
 > All other files in this project were created by [@ignaciogros](https://github.com/ignaciogros) and are licensed under AGPL.

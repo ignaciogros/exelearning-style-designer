@@ -15,7 +15,7 @@
             var sd = {
                 init : function(){
                     this.viewer = $("#viewer");
-                    $('.btn-light').on('click', function(){
+                    $('.btn-group .btn').on('click', function(){
                         if (this.id == 'page' || '<?php echo $defaultIndexFile; ?>' == 'index.html') sd.viewer.attr('src', 'contents/' + this.id + '/index.html?v='+ new Date());
                         else sd.viewer.attr('src', 'contents/' + this.id + '/html/<?php echo $defaultIndexFile; ?>?v='+ new Date());
                     });
@@ -42,6 +42,7 @@
             <?php } else { ?>
             <a href="./upload" class="btn btn-outline-light btn-sm" id="_blank">Upload</a>
             <?php } ?>
+            <a href="files/example.zip" class="btn btn-link btn-sm" id="exampleLnk" download>Example style</a>
         </div>
         <?php if (is_dir('contents')) { ?>
             <?php

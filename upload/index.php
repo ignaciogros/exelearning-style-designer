@@ -189,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="upload">
 <div id="sdHeader">
     <a href="../" class="btn btn-outline-light btn-sm mw" id="_blank">Style Designer</a>
+    <a href="../files/example.zip" class="btn btn-link btn-sm" id="exampleLnk" download>Example style</a>
 </div>
 <div class="container p-4">
     <h1 class="h5 mb-4 visually-hidden">Upload .zip files</h1>
@@ -216,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <ol class="mt-4 text-muted">
         <li>Open a content file with eXeLearning 3 and export it in these formats: Website, Single page, SCORM 1.2.</li>
         <li>Then select the <strong>3 .zip files</strong> and click on "Upload and process."</li>
-        <li>When the process is finished, click on "Style Viewer" to see the different views.</li>
+        <li>When the process is finished, click on "Style Designer" to see the different views.</li>
         <li>Do not change the default names assigned by eXeLearning (they end with _page.zip, _scorm.zip, and _web.zip).</li>
     </ol>
 </div>

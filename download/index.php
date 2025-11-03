@@ -3,18 +3,21 @@ if (isset($_POST['confirmDeleteAction'])) {
     // Function to recursively delete a folder and its contents
     function deleteDirectory($dir) {
         if (!file_exists($dir)) return;
+
         $items = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST
         );
+
         foreach ($items as $item) {
             if ($item->isDir()) {
-                rmdir($item->getRealPath());
+                @rmdir($item->getRealPath());
             } else {
-                unlink($item->getRealPath());
+                @unlink($item->getRealPath());
             }
         }
-        rmdir($dir);
+
+        @rmdir($dir);
     }
 
     // Paths to theme and contents folders
@@ -106,6 +109,7 @@ if (isset($_POST['download'])) {
     <body class="upload">
         <div id="sdHeader">
             <a href="../" class="btn btn-outline-light btn-sm mw" id="_blank">Style Designer</a>
+            <a href="../files/example.zip" class="btn btn-link btn-sm" id="exampleLnk" download>Example style</a>
         </div>
         <div class="container p-4">
             <h1 class="h5 mb-4 visually-hidden">Download style</h1>
@@ -114,6 +118,7 @@ if (isset($_POST['download'])) {
                 <li>Remember that "name" is an ID and cannot contain spaces or special characters.</li>
                 <li>If your work is based on another style, you must respect the license terms.</li>
                 <li>You can add any additional information about licenses, authorship, or anything else you need in the "description" field.</li>
+                <li>If you want to customize the favicon for exports, you can include a "favicon.ico" or "favicon.png" file in the "img" folder of your style.</li>
                 <li>When you're finished, click "Download Style".</li>
             </ol>
             <form method="post">
