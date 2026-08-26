@@ -224,8 +224,16 @@ Only if the style has one. Which implementation decides the checks.
   are opened from disk all the time. Use `background-image`.
 - Icons should be flat ink on transparency: only those survive a `filter` predictably.
 - Deliver at 3× displayed size; check the displayed size, not the file.
-- Every icon in `theme/icons/` should correspond to an iDevice; a missing icon falls back to
-  a default and looks like a style bug.
+- **iDevice icons that do not load are a workspace artefact, not a style defect.** The
+  exported HTML asks for `theme/icons/<name>.png` using the name of the iDevice the author
+  picked; the folder served comes from whatever style was bundled into the export. Editing a
+  style against content exported with a different one breaks that agreement by definition, so
+  it happens with every style. Two separate mismatches, often at once: the naming convention
+  (`eng_aprenderaprender.png` vs `udl_eng_aprenderaprender.svg` vs the generic `info.png`)
+  and the extension (an SVG never loads into `<img src="*.png">`). **Report it once, in one
+  line, and stop there** — never rename, convert or move a style's icons to match one export.
+  That would make the style wrong for every other project. Tracked in the repository's
+  `TODO.md` as an application-side problem.
 - Images referenced nowhere are dead weight in the `.zip` — report, do not delete
   unilaterally (an icon may be for an iDevice absent from *this* project).
 
@@ -311,7 +319,9 @@ JS has run — reading the HTML will not show you the element you are styling (�
    — punctuation and line numbers `#999999` at 2.56:1, `string` 3.08:1, `function` 3.59:1,
    `comment` 3.64:1, `keyword` 4.47:1. They ship with eXeLearning, the dark `code-style-2`
    theme passes, and repainting them is a change to the general presentation of every code
-   block. **Report the numbers, do not repaint them** unless the user asks.
+   block. **Standing decision: never repaint them.** Report the numbers once and leave the
+   tokens exactly as eXeLearning ships them — this is settled, not a question to re-open each
+   review.
 
 ---
 
@@ -329,6 +339,7 @@ makes the real findings harder to see.
 | No `@font-face`, no `fonts/`, no dark mode, no `style.js` | A minimal style. Absence is only a finding when something in the style refers to it |
 | `compatibility` below the current eXeLearning version | States which version the style targets; it is not a defect to be bumped |
 | A duplicated block differing only in `z-index` | Two states of the same control (`.siteNav-off` and not) |
+| An iDevice icon that does not load | Name or extension mismatch between what the export asks for and what the style ships — a workspace artefact, never a style defect (§7) |
 | `filter: invert(1)` on an icon | Recolouring flat ink — the cheap, intended technique (§11) |
 | `clip: rect(1px 1px 1px 1px)` twice, with and without commas | Deliberate legacy-syntax fallback |
 | `!important` in `@media print` | Print overrides frequently need it; still wants its comment |
