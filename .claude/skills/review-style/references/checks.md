@@ -75,6 +75,7 @@ your style.css`. Yours is last, so equal specificity wins.
 | Parse-time code touching `<body>` | A script running before `</head>` cannot read the format classes of §7 — `<body>` does not exist yet |
 | Parse-time and `init()` out of sync | If one sets a class before first paint, the other must be able to undo it where the feature does not apply |
 | Hardcoded interface text | §9. Use `$exe_i18n` — exports are translated. Keys: `menu`, `search`, `more`, `mode_toggler`, `teacher_mode`, `hide`, `download`, `block`, `toggleContent`, and the rest in `libs/common_i18n.js` |
+| A URL rewritten by hand | §9. `$exeExport.setUrlParam(href, name, value)` sets one parameter keeping the rest and the fragment; `null` removes it. See below |
 | A key read from `$exe_i18n` that the export does not define | Gives `undefined` in the UI. Grep `libs/common_i18n.js` |
 | Feature applied in a format where it cannot work | A dark-mode toggle inside an LMS iframe. §7: an intermittent control is worse than no control — disable it for that format rather than letting the browser decide |
 | Global namespace pollution | One object (`myTheme`) is the convention. A bare `var x` at top level can collide with the application's |
@@ -83,6 +84,28 @@ your style.css`. Yours is last, so equal specificity wins.
 | jQuery API removed in the bundled version | Check the version first: `contents/*/libs/jquery/`. `.bind()`, `.delegate()`, `.size()` are *deprecated* in jQuery 3 and still work; they are removed in 4. Deprecated-but-working is a suggestion, not a defect — say which it is |
 | Markup built by the JS | The page must stay readable with JS off (§9). Check that no content is *only* reachable through injected markup |
 | Quote style | Single quotes (§1) |
+
+**Query parameters are a shared channel, and hand-rolled URL surgery breaks it.** A style
+that carries its own state across navigation — `nav=false` for a collapsed menu is the
+usual one — rewrites links the application generated. Through those links also travel
+`exe-teacher`, `q`, `print` and the four xAPI credentials. The three broken patterns, all
+of which survive a casual test because the sample content has no other parameters:
+
+```js
+e.href = ref.split('?')[0];                    // drops every parameter AND the fragment
+e.href = ref + (cond ? '&' : '?') + 'nav=false';  // guesses the separator; a second '?'
+window.location = this.href + '?nav=false';    // lands inside the fragment if there is a #ancla
+```
+
+All three are replaced by `$exeExport.setUrlParam(getAttribute('href'), 'nav', value)`,
+with `value` `null` to remove. Use `getAttribute('href')`, not the `.href` property, which
+absolutises the export's relative links. Detection belongs to `URLSearchParams`:
+`new URLSearchParams(location.search).get('nav') === 'false'`, not `indexOf('nav=false')`,
+which also matches `?xnav=false` and a fragment that happens to contain the text.
+
+It is a pattern several styles inherited from one another, so **check it even when the
+style looks tidy**, and check the removal branch as well as the addition — dropping the
+query silently breaks LMS tracking and teacher mode, and nothing on screen says so.
 
 **Injected markup must be accessible.** A `<button>` the style builds needs an accessible
 name (visible text, or a visually-hidden `<span>`, or `aria-label` from `$exe_i18n`), and a

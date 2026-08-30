@@ -302,6 +302,33 @@ Togglers, pagination, accordion sections, definition-list chips, and more. Conse
 `teacher_mode`, `hide`, `download`, `block`, `toggleContent`. **Never hardcode interface
 text: the export is translated.**
 
+`$exeExport.setUrlParam(href, name, value)` sets one query parameter on an href, keeping
+every other parameter and the fragment; pass `null` as the value to remove it. It is
+defined in `libs/exe_export.js`, which every format loads.
+
+**Use it for any URL a style rewrites — never split the string yourself.** A style that
+carries its own state across navigation (`nav=false` for a collapsed menu is the usual
+one) has to add and remove a parameter on links the application generated, and the
+hand-rolled versions of that are wrong in ways that do not show up in a quick test:
+
+```js
+e.href = ref.split('?')[0];             // drops EVERY parameter, and the fragment with it
+e.href = ref + '?' + 'nav=false';       // a second '?' if the link already had a query
+window.location = this.href + '?nav=false';  // lands INSIDE the fragment if there is a #ancla
+```
+
+Through those URLs travel `exe-teacher`, `q`, `print` and the four xAPI credentials, so
+wiping the query **breaks LMS tracking and teacher mode**, and the exported links already
+arrive with parameters the application put there. Read the current value with
+`URLSearchParams`, not by searching the string:
+
+```js
+if (new URLSearchParams(window.location.search).get('nav') === 'false') { … }
+```
+
+Operate on `getAttribute('href')`, not on the `.href` property: the property absolutises
+the relative links the export writes.
+
 ### If your own `style.js` runs at parse time
 
 A script that must set a class on `<html>` before first paint (a stored theme choice, for
