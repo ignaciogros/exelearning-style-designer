@@ -23,7 +23,7 @@ general presentation.**
 
 | Apply directly | Ask first |
 | --- | --- |
-| Remove code proven dead (Phase 2 rules) | Remove anything that *might* be a typo — always |
+| Remove code proven dead (Phase 2 rules) | Remove **or rename** anything that *might* be a typo — always |
 | Fix invalid CSS, broken selectors, JS that throws | Change a colour enough to read as a different colour |
 | Add missing guards, null checks, missing `:focus-visible` | Change spacing, sizes, radii, layout, breakpoints |
 | Minimal contrast nudges: same hue, darker/lighter | Change or add a font |
@@ -134,6 +134,46 @@ kept the CSS rule and dropped the button has genuinely dead code. **"Correcting"
 spelling would have broken the working style.** Never normalise an identifier because it
 reads wrong. If the same name appears in the application's own code or in another style,
 it is the name.
+
+### The closed-identifier exception — a misspelling the style owns can be corrected
+
+The warning above is about names with an owner **elsewhere**. The deciding question is not
+how the name reads, it is **who creates the element in the style you are reviewing**. When
+the style writes the element *and* holds every reference to it, there is no contract with
+anyone and the misspelling is just a misspelling.
+
+`#searchBarTogger` is both examples at once, which is why the distinction matters:
+
+- In a style that **kept the CSS rule and dropped the button**, the reference is dead code
+  and renaming it fixes nothing — that is the case the ⚠️ above is warning about.
+- In a style whose own `style.js` **builds that button**, the id never leaves the style.
+  `exe_export.js` does not name it, the exported HTML does not name it, nothing upstream
+  reads it. It can be corrected.
+
+The test is a grep, and it has to come back empty everywhere but the style itself:
+
+```bash
+grep -rn "<id>" theme/style.js theme/style.css          # every site the style owns
+grep -rn "<id>" contents/*/libs/ contents/*/html/        # must be empty
+```
+
+Two kinds of echo are **not** a reason to keep the typo. `contents/*/theme/` is a frozen copy
+of the export and is rewritten on the next upload. `theme/other-style.js` and
+`files/example_css_files/*.css` belong to the application — that is where the slip was
+inherited from, it is out of scope, and it is worth **reporting** so the next style does not
+inherit it again.
+
+Then rename **every site in one change**: the JS that builds the element, the JS that selects
+it, and every CSS rule. Count them before starting — `#searchBarTogger` → `#searchBarToggler`
+was seven — because a half-done rename leaves the element silently unstyled, which is worse
+than the typo.
+
+⚠️ **No browser check is needed, in Phase 6 or anywhere else.** A closed identifier is
+internal to the style by definition: if the grep is clean and the rename is complete, nothing
+outside can be looking at the old spelling, and there is no format, state or breakpoint in
+which it reappears. Verify by counting occurrences, not by loading a page.
+
+It is still a change the user decides. Report it with the other typo candidates.
 
 **Report cases 1 and 3 and wait for the user's answer. Never delete on your own judgement.**
 Present each one as: what the code says, what exists instead, which of the three it looks

@@ -68,7 +68,7 @@ your style.css`. Yours is last, so equal specificity wins.
 | Check | Notes |
 | --- | --- |
 | Syntax errors, unreachable code, unused functions and variables | An unused function may be an API for a future flag — ask before removing |
-| Handlers bound to selectors that match nothing | Apply the typo rule in `SKILL.md`. Never delete on your own judgement |
+| Handlers bound to selectors that match nothing | Apply the typo rule in `SKILL.md`. Never delete on your own judgement. Its closed-identifier exception covers the other half: a misspelled id the style both writes and reads can be renamed — grep, count the sites, rename them all at once, no browser check |
 | `.html()`, `.attr()`, `.offset()` on an empty jQuery set | jQuery tolerates most calls on an empty set, but `.html()` returns `undefined` and the next `.replace()` **throws**, killing everything after it |
 | Native DOM on a possibly-absent element | `document.querySelector(x).classList` throws on `null`. jQuery does not; raw DOM does |
 | `localStorage` read or write without `try/catch` | §9. It **throws** in a sandboxed iframe or with third-party cookies off. In SCORM/IMS that is not an edge case, it is Safari's default |
