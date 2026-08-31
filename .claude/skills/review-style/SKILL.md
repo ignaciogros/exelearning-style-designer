@@ -108,6 +108,13 @@ offset for an icon the sprite does not contain.
 Load `references/checks.md` now and work through it. The two rules that outrank the
 catalogue:
 
+⚠️ **Start with its §11 (Effects).** Upstream PR exelearning/exelearning#2344 moved the focus
+rings and the underline policy of the five effects into `exe_effects.css`, so a style written
+before it carries rules that are now redundant, and possibly an `outline: none` that
+suppresses a ring the sheet guarantees. It costs one grep to know which case you are in, and
+it changes what you do with every FX rule you meet afterwards. The styles bundled with
+eXeLearning are already adapted; the ones the user hands you are not.
+
 ### The typo rule — never silently delete a reference to something missing
 
 When a selector or a JS call targets an element that does not exist, there are three

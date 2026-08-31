@@ -57,6 +57,9 @@ your style.css`. Yours is last, so equal specificity wins.
   considered explicitly.
 - **`base.css` beats `exe_effects.css`.** A component that looks wrong out of the box is
   often the cascade, not the component.
+- **`exe_effects.css` pairs a background with a colour on the current pagination chip**, and
+  a style rule for every pagination link ties on specificity and loads later, so it takes the
+  colour and leaves the background. **§11 below** — check it in every style.
 - **Two of your own rules at equal specificity: the later wins entirely, not per-value.**
   Where one property carries two meanings at once — two markers packed into one
   `box-shadow` — only a combined selector declaring both works.
@@ -141,6 +144,9 @@ meaning **3:1** — that last one has no AAA step.
   it: `outline: 2px solid <accent>; outline-offset: 2px` on `:focus-visible`. A text
   underline alone does not satisfy 2.4.11. **`currentColor` is not safe for a ring** — on a
   filled control the text is white and a white ring on a white page is no ring.
+  ⚠️ **The five effects are the exception: `exe_effects.css` draws their rings itself now**
+  and the style only sets `--exe-fx-focus-color`. Writing the rules by hand there is
+  redundant, and `outline: none` on an FX control is a defect. **§11 below**.
 - **Underlines are required for links among prose** (1.4.1); not required for standalone
   controls in a bar of their own.
 - **Colour must never be the only signal.** A rule plus an icon is fine; a hue alone is not.
@@ -363,8 +369,105 @@ makes the real findings harder to see.
 | `compatibility` below the current eXeLearning version | States which version the style targets; it is not a defect to be bumped |
 | A duplicated block differing only in `z-index` | Two states of the same control (`.siteNav-off` and not) |
 | An iDevice icon that does not load | Name or extension mismatch between what the export asks for and what the style ships — a workspace artefact, never a style defect (§7) |
-| `filter: invert(1)` on an icon | Recolouring flat ink — the cheap, intended technique (§11) |
+| `filter: invert(1)` on an icon | Recolouring flat ink — the cheap, intended technique (AGENTS.md §11) |
+| No `:focus-visible` rule for tabs, pagination or the accordion | `exe_effects.css` owns those rings now; the style only sets `--exe-fx-focus-color` (§11 below) |
+| A rule using `.fx-carousel-pagination` with no link styling in it | Still needed for the prev/next arrows' position and size; only the *link* rules are duplication (§11 below) |
 | `clip: rect(1px 1px 1px 1px)` twice, with and without commas | Deliberate legacy-syntax fallback |
 | `!important` in `@media print` | Print overrides frequently need it; still wants its comment |
 | `display: block !important` on the search box | Fighting an inline style from the application's JS (§9) |
 | A `100vh` with a `calc()` subtracting a bar height | Sticky-footer arithmetic; check the number matches the bar, do not remove it |
+
+---
+
+## 11. Effects (FX) — what `exe_effects.css` now owns
+
+Upstream PR **exelearning/exelearning#2344** («Improve the presentation and accessibility of
+the effects», CSS only, `exe_effects.js` untouched) moved the focus rings and the underline
+policy of the five effects **into `exe_effects.css`**. Work a style did by hand before is now
+either redundant or actively wrong.
+
+The styles bundled with eXeLearning (`base`, `universal`, `flux`, `neo`, `nova`, `zen`) are
+already adapted, and the PR ships a test suite that keeps them that way. **This section is for
+the styles the user hands you**, which are not covered by it.
+
+### First: does this content set even have it?
+
+```bash
+grep -c "exe-fx-focus-color" contents/*/libs/exe_effects/exe_effects.css
+```
+
+**Three non-zero counts, or the section does not apply.** A `0` means the exports predate the
+PR: the style still has to draw its own rings, and everything below turns into a suggestion
+for when the content is re-exported. Say which case you are in — never apply this against an
+old export set and leave the style with no focus indicator at all.
+
+Every effect is wrapped in `<div class="exe-fx exe-…">`, and the new rules are scoped to
+`.exe-fx`.
+
+### The ring is a custom property now, not a rule
+
+`exe_effects.css` draws it on `:focus-visible` for tabs, pagination, accordion titles,
+`.fx-timeline-expand` and both timeline headings:
+
+```css
+outline: 2px solid var(--exe-fx-focus-color, #1a1a1a);
+outline-offset: 2px;
+```
+
+| Check | What to do |
+| --- | --- |
+| The style writes its own `:focus-visible` outline for `.fx-tabs a`, `.fx-pagination a`, `.fx-carousel-pagination a`… | **Redundant.** Replace the lot with `.exe-content { --exe-fx-focus-color: <accent>; }` |
+| The style sets no `--exe-fx-focus-color` | The ring falls back to `#1a1a1a`. Legible, but off-palette — worth setting |
+| `outline: none` / `outline: 0` on anything matching `.fx-`, `.exe-accordion`, `.exe-tabs`, `.exe-paginated`, `.exe-carousel`, `.exe-timeline` | **Defect.** It suppresses the ring the sheet now guarantees. The PR's test asserts no bundled style does this |
+| The ring painted with `box-shadow` | The sheet deliberately never uses `box-shadow` for the ring, so a style can keep painting the *control* with one and both coexist. Do not take that channel over |
+| `overflow: hidden` or `auto` on an FX container in the style | Clips the ring. The PR removed exactly that from `.fx-tabs` and `.fx-carousel-pagination` (clearfix `:after` instead) and added `.js .exe-accordion:has(.fx-accordion-title:focus-visible){overflow:visible}` |
+
+⚠️ **Measure the ring against the page background, not against the control.** `outline` is
+drawn *outside* the box, over whatever is behind it. Threshold 3:1 (§13).
+
+### ⚠️ The current-page chip — the trap worth checking in every style
+
+`exe_effects.css` pairs a background and a colour on the current pagination item:
+
+```css
+.fx-pagination .fx-current a{background:#333;color:#fff}
+```
+
+A style rule that recolours **every** pagination link —
+`.exe-content .fx-pagination a { color: … }` — matches the chip too, at equal specificity and
+loading later, so it **repaints the text and leaves the dark background underneath**. Dark ink
+on `#333`.
+
+It is easy to miss twice over: the chip only fails **at rest**, because
+`.fx-pagination .fx-current a:hover, :focus` re-asserts `#fff` at higher specificity. Hovering
+the element to inspect it makes the bug disappear.
+
+Two correct shapes, both acceptable:
+
+```css
+/* Leave the chip alone */
+.exe-content .fx-pagination li:not(.fx-current) a { color: #b14900; }
+
+/* Or restyle it whole — both halves of the pair, never just the colour */
+.exe-content .fx-pagination .fx-current a { background: #145cb1; color: #ffffff; }
+```
+
+### The carousel pagination is not a separate component
+
+Its list carries **both** `fx-carousel-pagination` and `fx-pagination`, and the PR deleted the
+duplicated link rules from `exe_effects.css` accordingly. So in a style:
+
+- A third selector for `.fx-carousel-pagination a` alongside `.fx-pagination a` is
+  **duplication**, not a defect — fold it into `.fx-pagination a` and say so.
+- `.fx-carousel-pagination` on its own is **not** dead: it still positions the prev/next
+  arrows and sets their font size. Do not delete rules that use it for layout.
+
+### Underlines
+
+The sheet now guarantees **no underline** on the controls in every state (WCAG 1.4.1: they are
+not links inside prose), and **keeps** the underline on `.fx-timeline-minor h3 a`, which are
+plain text links inside the event list.
+
+- A style adding `text-decoration: underline` to an FX control now fights the sheet.
+- A style that carried `text-decoration: none` workarounds for these controls can drop them.
+- Removing the underline from `.fx-timeline-minor h3 a` **is** a finding: those are prose links.
