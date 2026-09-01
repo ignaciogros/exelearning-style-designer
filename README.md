@@ -6,7 +6,7 @@
 
 ## Description
 
-eXeLearning Style Designer is a tool designed to facilitate the creation of custom styles for **eXeLearning 3**.
+eXeLearning Style Designer is a tool designed to facilitate the creation of custom styles for **eXeLearning 4**.
 
 With this tool, you can easily edit and customize the look and feel of your eXeLearning projects by creating new styles and packaging them for distribution.
 
@@ -20,7 +20,7 @@ This tool is **not intended for non-technical users**. It is designed for web de
 
 ⚠️ **This application must never be used in production.**
 
-It does not include the necessary security measures. This tool is intended solely for designers to simplify the creation of styles for eXeLearning 3.
+It does not include the necessary security measures. This tool is intended solely for designers to simplify the creation of styles for eXeLearning 4.
 
 ---
 
@@ -177,7 +177,7 @@ This project is licensed under the **AGPL**. You may freely use, modify, and dis
 The following third-party resources are included in this project:
 
 - **Example content:** `files/fixtures/leer-para-aprender.elpx`
-  Used to create screenshots of Styles in eXeLearning 3.
+  Used to create screenshots of Styles in eXeLearning 4.
   Original content created for [CEDEC](https://cedec.intef.es/).
   License: [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/3.0/)
 

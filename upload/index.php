@@ -255,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Instructions -->
     <?php if (!isset($valid) || !$valid) { ?>
     <ol class="mt-4 mb-4 text-muted">
-        <li>Open a content file (.elpx) with eXeLearning 3 and export it in these formats: Website, Single page, SCORM 1.2.</li>
+        <li>Open a content file (.elpx) with eXeLearning 4 and export it in these formats: Website, Single page, SCORM 1.2.</li>
         <li>Then select the <strong>3 .zip files</strong> and click on "Upload and process."</li>
         <li>Do not change the default names assigned by eXeLearning (they end with _page.zip, _scorm.zip, and _web.zip).</li>
     </ol>
