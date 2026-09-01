@@ -1,5 +1,5 @@
 /*!
- * eXeLearning v3.0.1 Example Style File
+ * eXeLearning v4.0.4 Example Style File
  * ----------------------
  * Author: Ignacio Gros
  * Project: eXeLearning.net
@@ -16,6 +16,7 @@
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 400;
+    font-display: swap;
     src: local('Open Sans'), local('OpenSans'),
         url(fonts/open-sans.woff2) format('woff2'),
         url(fonts/open-sans.woff) format('woff');
@@ -24,6 +25,7 @@
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 700;
+    font-display: swap;
     src: local('Open Sans Bold'), local('OpenSans-Bold'),
         url(fonts/open-sans-bold.woff2) format('woff2'),
         url(fonts/open-sans-bold.woff) format('woff');
@@ -37,19 +39,22 @@ body.exe-export {
 .exe-content,
 body#tinymce {
     font-family: 'Open Sans', Arial, Verdana, Helvetica, sans-serif;
-    line-height: 1.5em;
+    line-height: 1.5;
     font-size: 0.95em;
+    color: #212529;
+    --exe-fx-focus-color: #6d0a0a;
+    --exe-icon-color: #268791;
 }
 .exe-content p {
     margin: 1em 0;
 }
 .exe-content a {
-    color: #a30f0f;
+    color: #6d0a0a;
     text-decoration: none;
 }
 .exe-content a:hover,
 .exe-content a:focus {
-    color: #6d0a0a;
+    color: #a30f0f;
     text-decoration: underline;
 }
 
@@ -66,22 +71,26 @@ body#tinymce {
     padding: 20px;
     position: relative; /* To set the position of the dark mode toggler */
 }
-body:has(#teacher-mode-toggler-wrapper) .package-title {
+body:has(#teacher-mode-toggler-wrapper + .package-header) .package-title,
+body:has(.page-header #teacher-mode-toggler-wrapper) .page-title {
     padding-right: 100px;
 }
 #teacher-mode-toggler-wrapper {
     float: right;
+    color: #ffffff;
+    position: relative;
+    z-index: 100;
 }
 body:has(.package-header #darkModeToggler) #teacher-mode-toggler-wrapper {
-    margin-right: 45px;
+    margin-right: 55px;
 }
 #teacher-mode-toggler-wrapper .form-check-input {
     filter: grayscale(1);
 }
 #teacher-mode-toggler-wrapper .form-check-input:checked {
     filter: grayscale(0);
-    background-color: #a30f0f;
-    border-color: #a30f0f;
+    background-color: #6d0a0a;
+    border-color: #ffffff;
 }
 .exe-content .package-title {
     font-size: 1.2em;
@@ -140,6 +149,7 @@ body:has(.package-header #darkModeToggler) #teacher-mode-toggler-wrapper {
 .exe-content .box-icon {
     float: left;
     margin-right: 10px;
+    color: var(--exe-icon-color, #268791);
 }
 .exe-content .box-head.no-icon {
     padding-left: 20px;
@@ -148,6 +158,13 @@ body:has(.package-header #darkModeToggler) #teacher-mode-toggler-wrapper {
     width: 50px;
     height: auto;
     scale: .9;
+}
+/* General icons (Material Symbols) */
+.exe-content .box-icon .exe-material-icon,
+#node-content-container.exe-content .box-head .exe-material-icon {
+    width: 45px;
+    height: 45px;
+    transform: scale(1.2);
 }
 .exe-export .box-title {
     padding-top: 15px;
@@ -187,13 +204,12 @@ body:has(.package-header #darkModeToggler) #teacher-mode-toggler-wrapper {
 /* Feedback buttons */
 .exe-content .iDevice_buttons input[type='button'],
 .exe-content .iDevice_buttons input[type='submit'] {
-    border:none;
+    border: none;
     background: #6d0a0a;
-    color: #FFF;
+    color: #ffffff;
     padding: .5em 1em;
     margin: .5em 0;
-    transition: all 1s ease;
-    
+    transition: background 1s ease;
 }
 .exe-content .iDevice_buttons input[type='button']:hover,
 .exe-content .iDevice_buttons input[type='button']:focus,
@@ -275,10 +291,12 @@ body:has(.package-header #darkModeToggler) #teacher-mode-toggler-wrapper {
 #siteNav a.highlighted-link {
     color: #500707;
     background: #fff0f0;
+    box-shadow: inset 0 0 0 1px #c0a6a6;
 }
 #siteNav a.highlighted-link:hover,
 #siteNav a.highlighted-link:focus {
     background: #ffffff;
+    color: #500707;
 }
 #siteNav a:hover,
 #siteNav a:focus {
@@ -342,9 +360,6 @@ button#searchBarTogger {
 }
 .exe-search-on #searchBarTogger {
     display: inline;
-}
-#exe-client-search {
-    display: none;
 }
 #exe-client-search {
     max-width: 1280px;
@@ -474,7 +489,7 @@ button#searchBarTogger {
     left: 0;
     height: 50px;
     border: none;
-    background: #8f0d0d;
+    background: #6d0a0a;
     width: 100%;
 }
 .nav-buttons .nav-button-left {
@@ -482,7 +497,6 @@ button#searchBarTogger {
     top: 0;
     right: 50px;
     display: block;
-    background: #6d0a0a;
     width: 50px;
     height: 50px;
     background: url(img/icons.png) no-repeat -100px 0;
@@ -493,7 +507,6 @@ button#searchBarTogger {
     top: 0;
     right: 0;
     display: block;
-    background: #6d0a0a;
     width: 50px;
     height: 50px;
     background: url(img/icons.png) no-repeat -150px 0;
@@ -537,6 +550,9 @@ body.exe-web-site {
     html body.exe-export {
         background: #ffffff;
     }
+    body.exe-web-site {
+        padding-top: 0;
+    }
     .exe-export .exe-content {
         background: #ffffff;
         box-shadow: none;
@@ -546,12 +562,14 @@ body.exe-web-site {
     @page {
         margin: 1.5cm;
     }
-    .exe-export .box-toggle {
+    .exe-export .box-head .box-toggle,
+    #siteNavToggler,
+    .exe-search-on #searchBarTogger,
+    #darkModeToggler {
         display: none;
     }
     .exe-web-site #siteNav,
-    .exe-web-site .nav-buttons,
-    .exe-web-site button.toggler {
+    .exe-web-site .nav-buttons {
         display: none;
     }
     .exe-export #siteFooter,
@@ -562,9 +580,35 @@ body.exe-web-site {
         padding-left: 0;
         padding-right: 0;
     }
-    .exe-export .page-counter {
-        top: 0;
-        right: 0;
+    .exe-content .package-header,
+    .exe-content .page-header,
+    #siteFooter,
+    .exe-web-site #siteFooterContent {
+        background: none;
+        color: #000000;
+    }
+    #siteFooter a {
+        color: #000000;
+    }
+    #teacher-mode-toggler-wrapper {
+        color: #000000;
+    }
+    .exe-content .page-counter {
+        position: static;
+        background: none;
+        color: #000000;
+    }
+    .pre-code {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .exe-export .box-head .box-toggle,
+    .exe-content .iDevice_buttons input[type='button'],
+    .exe-content .iDevice_buttons input[type='submit'] {
+        transition: none;
     }
 }
 
@@ -576,21 +620,24 @@ body.exe-web-site {
     html.exe-dark-mode :is(img, video, iframe) {
         filter: invert(100%) hue-rotate(180deg);
     }
+    html.exe-dark-mode .exe-content .page-header {
+        background: #a30f0f;
+    }
     html.exe-dark-mode #made-with-eXe a {
         filter: invert(100%) hue-rotate(180deg);
         opacity: 1;
     }
     html.exe-dark-mode .exe-web-site .nav-buttons,
     html.exe-dark-mode .exe-web-site .toggler,
-    html.exe-dark-mode .exe-web-site .page-counter{
+    html.exe-dark-mode .exe-web-site .page-counter {
         filter: invert(100%) hue-rotate(180deg);
         background: #0d0f12;
-        color: #FFFFFF;
+        color: #ffffff;
     }
     html.exe-dark-mode #eXeAtoolsBtnSet,
-    html.exe-dark-mode #eXeAtoolsSet{
+    html.exe-dark-mode #eXeAtoolsSet {
         filter: invert(94%) hue-rotate(180deg);
-        box-shadow: rgb(255, 255, 255) 0px 0 2px;
+        box-shadow: #ffffff 0 0 2px;
     }
 }
 
@@ -598,4 +645,11 @@ body.exe-web-site {
 #node-content-container .box-head {
     border: 1px solid #dfe2e6 !important;
     margin-bottom: 10px;
+}
+#node-content-container.exe-content .box-head .exe-icon {
+    padding: 0;
+}
+#node-content-container.exe-content .box-head .exe-icon img {
+    width: 50px;
+    height: auto;
 }
