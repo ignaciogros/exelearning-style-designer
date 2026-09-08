@@ -58,6 +58,23 @@ Three files, and none of them stands alone — `SKILL.md` loads the other two by
 Neither `SKILL.md` nor `checks.md` names a specific style, and they should stay that way.
 Findings about a particular style go in `notes/<style>.md`, which is not versioned.
 
+## Target version: eXeLearning 4.0.4
+
+The tool is released as **4.0.4**, matching the eXeLearning it targets, and the READMEs say
+plainly that content exported by earlier versions is **not supported**. The previews are only
+meaningful against 4.0.4 markup: the effects components read a focus colour from the style,
+the teacher-mode switch exists, General Icons are Material Symbols, and navigation goes
+through the core's URL helper. None of that is in an older export.
+
+⚠️ **One leftover contradicts that claim, and it has not been removed.** `upload/index.php`
+still renames eXeLearning **3**'s `default.js` / `content.css` and rewrites the old
+`<link>`/`<script>` paths (the `$isV3` branch). It is live code for a version the tool no
+longer claims to support. Removing it is a decision for the author — do not tidy it away.
+
+The bundled `files/fixtures/*.zip` report `exe_version 0.0.0-alpha`. That is the author's
+local build carrying the changes that ship in 4.0.4, **not** an older export: it is the
+right fixture, and the version string is not a defect.
+
 ## Running it
 
 No build step, no test suite, no package manager. It is plain PHP 8 + Apache serving
@@ -91,7 +108,8 @@ and then:
 
 - wipes `contents/` and `theme/` and extracts each zip into `contents/{page,scorm,web}/`;
 - copies `contents/web/theme/` up to the root as `theme/` — **the editable copy**;
-- renames eXeLearning 3's `default.js` / `content.css` to `style.js` / `style.css`;
+- renames eXeLearning 3's `default.js` / `content.css` to `style.js` / `style.css` — the
+  `$isV3` leftover described above, for a version the tool no longer claims to support;
 - rewrites every exported `.html` so the `<link>` and `<script>` for the theme are written
   by `document.write()` pointing at **`../../../theme/style.css`** with a `Date.now()`
   cache buster — this rewrite is what makes editing the root `theme/` show up in all three
