@@ -629,6 +629,40 @@ enough, since the style loads last:
 #node-content-container.exe-content .box-head .exe-icon img { … }
 ```
 
+### What "correct in the editor" means
+
+Two rules, in this order (`AGENTS.md` §1):
+
+1. **The author has to be able to tell what the exported page will look like.** Identical is
+   impossible and is not the target; *recognisable* is — same typeface, colours, icon
+   treatment, and the same weight of a heading against its body text.
+2. **Touch the application's interface as little as possible.** The style's reach stops at
+   the content area. Toolbars, panels, dialogs and trees belong to the application.
+
+So the defects worth reporting here are the ones that make the editor **misdescribe the
+export**, in either direction: something the author will not get, or something they will get
+and cannot see.
+
+### ⚠️ Editor-only rules: the ones most likely to be stale
+
+A rule scoped to `#workarea` or `#node-content-container` was written against a host the
+author usually could not see, so it outlives its reason. **Check every one of them against
+the export**, and specifically for a *second, conflicting decision* about the same edge.
+
+The pattern to look for is a **duplicated separator**. If the export draws the boundary
+between two blocks once — typically `.box-content { border-top }` — and an editor-only rule
+adds a border to the block above it *plus* a margin, the editor shows **two parallel lines
+with a gap between them**, and the detached one reads as a stray rule rather than a boundary.
+Real case: `#workarea .box-head { border: 1px solid … !important; margin-bottom: 10px }`
+against `.exe-content .box-content { border-top: 1px solid … }` — 10px apart, and the author
+reports "a line that is not in the preview".
+
+Before keeping such a rule, check whether the export's own rules already reach the element.
+Measure it: read the computed background of the block in the editor. If the style's surface
+colour is already there, the border was never load-bearing — the background delimits the
+block — and removing it is what matches the export. Zero it explicitly
+(`border: 0 !important`) rather than deleting the rule, or the host's own border returns.
+
 ### Icon colour — check it in **every** style
 
 ⚠️ **The application declares `--exe-icon-color: #6E9F41` itself.** A style that does not

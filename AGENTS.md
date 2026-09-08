@@ -35,6 +35,25 @@ Three more that matter in practice:
 - **Report briefly.** The change is reviewed in the code, not in prose. State what you
   actually verified and what you did not — a measured number beats an adjective.
 
+### Inside the editor: recognisable, and nothing more
+
+The style is also loaded by the eXeLearning editor, and two rules govern that, in this order.
+
+1. **The author must be able to tell what the exported page will look like.** The editor
+   cannot render it identically — different wrapper, different host CSS, no export-only
+   classes — and it does not have to. It has to be *recognisable*: same typeface, same
+   colours, same icon treatment, same weight of a heading against its body text. A style
+   that looks like a different design in the editor makes the author work blind.
+2. **Touch the application's interface as little as possible. Always.** Your reach stops at
+   the content area — what becomes the exported page. Toolbars, panels, dialogs, trees and
+   buttons belong to the application; restyling them is out of scope even when you can.
+
+⚠️ **A rule that exists only for the editor is the one to distrust.** It was written against
+a host you probably could not see at the time, so it survives long after the reason for it
+does. Before adding one, check whether the export's own rules already reach that element —
+often they do, and the editor-only rule is then adding a second, conflicting decision. Before
+keeping one, open the editor and look.
+
 ### What a comment is for
 
 **Almost nothing.** A comment earns its place only as a short section label, or as the
