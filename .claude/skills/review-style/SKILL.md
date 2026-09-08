@@ -61,6 +61,33 @@ an edit to the content, and the shipped `.zip` is built from `theme/` alone.
 
 ## Phase 1 — Inventory: what *this* style is
 
+### ⚠️ First: is this style a delta over another one?
+
+Many styles are a derivation — `educablue-max` over `educablue`, an institutional variant
+over a base. If it is, **the review is the delta, not the file**, and the first thing to
+establish is where the delta starts. Get the parent from
+`public/files/perm/themes/base/<name>/` in the eXeLearning repository (raw URLs, `curl`)
+and diff:
+
+```bash
+diff <(head -<n> theme/style.css) parent/style.css     # must be empty
+```
+
+Two things this buys, and both matter:
+
+- **A divergence inside the shared part is itself a finding.** It means the derived style
+  drifted from its parent, and the fix is almost always to restore the parent's line — that
+  is what keeps the two files mergeable. Ask before doing anything else with it.
+- **Everything the parent already carries is out of scope** — its palette, its contrast, its
+  typography, its breakpoints. Do not re-measure what the parent's own review closed; read
+  its notes instead and say in the report that you took them as given.
+
+The parent's `config.xml` is also the reference for `version` and for the credits the derived
+style must keep. Deriving adds credits, it never removes them, and the derivation itself has
+to be stated (§6, Phase 4).
+
+### Then: what this style has
+
 Styles differ, and a check that assumes a feature the style does not have produces noise.
 Before checking anything, write down what you are looking at:
 
@@ -78,7 +105,17 @@ Before checking anything, write down what you are looking at:
   layout switches at one width and the behaviour at another.
 
 Then the mirror image: **what the exports contain**. Grep the three `contents/*/` trees for
-each optional element in §8 and record present / absent:
+each optional element in §8 and record present / absent.
+
+⚠️ **Grep the whole tree, not `html/`.** The website's home page is `contents/web/index.html`,
+a sibling of `html/`, not a file inside it — and SCORM has `index.html` too. A sweep of
+`contents/web/html/` alone silently misses whatever only the home page carries, and reporting
+an element as absent when it is sitting in `index.html` sends the rest of the review down the
+wrong path. `<html>` carries `id="exe-index"` there and its relative paths differ by one
+level, so it is a distinct case in its own right. Before writing "absent" for anything, re-run
+the grep over `contents/` unfiltered.
+
+The elements to record:
 
 `.package-subtitle` · `.page-counter` · `#teacher-mode-toggler-wrapper` · `#packageLicense`
 · `#siteUserFooter` · `.box-toggle` · `.box-icon` · `.box.no-header` · `#siteNav` ·
@@ -219,13 +256,44 @@ The font has to carry the text, not just look right in a heading.
 
 1. **Files resolve.** Every `src: url()` in `@font-face` points at a file that exists in
    `theme/fonts/`. Check the path, not just the name.
-2. **The four faces.** Regular, **bold**, *italic*, ***bold italic*** must all be reachable
-   — as separate files, or as a variable font whose `font-weight` range covers the weights
-   the CSS actually asks for plus an italic file (a variable font with no italic axis and no
-   italic file means the browser *synthesises* obliques, which is a quality defect, not a
-   bug — report it as a suggestion).
-   Cross-check: grep the CSS for every `font-weight` value used, and confirm the declared
-   range covers it. `font-weight: 800` against a `300 700` range silently clamps.
+2. **The four faces — and ⚠️ measure them, do not read them.** Regular, **bold**, *italic*
+   and ***bold italic*** must all be reachable: as separate files, or as a variable font
+   whose `font-weight` range covers every weight the CSS asks for **plus a separate italic
+   file** — the weight axis does not produce italics, and no mainstream variable font has a
+   slant axis you can rely on.
+
+   When a face is missing the browser does not fail and does not warn: it **synthesises**
+   the missing one by slanting or smearing the face it has. Nothing appears in the console,
+   `document.fonts` lists only the faces that exist, and the page looks approximately right.
+   That is why this check gets missed. **Treat a missing italic as a defect, not a
+   suggestion**, whenever the content uses italics at all — and eXeLearning content
+   routinely does: image credits, work titles, emphasis inside author prose.
+
+   One call settles it. Identical advance widths mean the same glyphs are being reused:
+
+   ```js
+   function w(style, weight) {
+       var s = document.createElement('span');
+       s.textContent = 'afgy Hamburgefonstiv';
+       s.style.cssText = 'position:absolute;visibility:hidden;font-size:100px;' +
+           'font-family:\'<the family>\';font-style:' + style + ';font-weight:' + weight;
+       document.body.appendChild(s);
+       var out = s.getBoundingClientRect().width; s.remove(); return out;
+   }
+   // w('normal',400) === w('italic',400)  ->  synthesised, no real italic
+   // same for 700; and w(300) === w(400) === w(600) -> no continuous weight axis
+   ```
+
+   Run it after `await document.fonts.ready`, and check both 400 and 700 — a style can ship
+   a regular italic and still synthesise the bold one.
+
+   Cross-check the range too: grep the CSS for every `font-weight` value used and confirm
+   the declared range covers it. `font-weight: 800` against a `300 700` range silently
+   clamps.
+
+   **A variable font is the tidy answer** and worth suggesting when faces are missing: two
+   files — roman and italic — cover every weight, and split by `unicode-range` they become
+   four that load on demand.
 3. **Character coverage.** Read the `unicode-range`. Latin-1 (`U+0000-00FF`) covers Spanish,
    French, German. It does **not** cover Latin Extended-A (Polish, Czech, Turkish ı/ğ,
    Welsh), nor Greek, Cyrillic, or the arrows and maths symbols an author may paste.
@@ -243,7 +311,20 @@ The font has to carry the text, not just look right in a heading.
    numbers that stay in register, and the two of them must come out the same size as each
    other. §9 of the catalogue is the checklist — run it whenever the content has a code
    block, and run it again after any change to font size or scaling.
-8. **Licence.** Every font file must be credited in `config.xml` — Phase 4 checks it.
+8. **Licence — and the licence *file*.** Every font file must be credited in `config.xml`
+   (Phase 4). Two things beyond the credit line:
+   - ⚠️ **Get the licence right, and re-check it when the files change.** The same family
+     can ship under different terms in different releases — Open Sans was Apache 2.0 and is
+     now SIL OFL 1.1. Swapping the files without swapping the credit leaves a false
+     statement in the one place the end user reads.
+   - ⚠️ **Some licences require their text to travel with the font.** OFL 1.1 condition 2
+     obliges every redistribution to carry the copyright notice and the licence, so a style
+     shipping `.woff2` under it needs `fonts/OFL.txt` (or `LICENSE.txt`) inside the `.zip`.
+     And if `description` points at such a file, **confirm the file exists** — a pointer to
+     a deleted licence is worse than no pointer.
+   - Boilerplate belongs to the licence it came from. An "AS IS" disclaimer left over from a
+     previous licence, floating without the clause it closed, is a defect: delete it or
+     replace it with the right one.
 
 ## Phase 4 — `config.xml`: legal and authorship
 
@@ -337,6 +418,14 @@ formats:
    well — that combination is where the damage is (§6 of this catalogue). Do not stop at the
    first print block; a style may have several.
 8. Re-run the probe after every fix. A contrast fix on one surface routinely breaks another.
+9. **The eXeLearning editor, if a workarea is open.** The exports are only half the surface:
+   the same `style.css` loads into the application, where `#node-content-container` also
+   carries `.exe-content`. **`references/checks.md` §12** has the checklist — the icon-picker
+   colour in particular has to be checked in **every** style, because the application declares
+   `--exe-icon-color` itself and a style that does not override it shows the application’s
+   green instead of its own palette. The Style Designer cannot show any of this; it needs the
+   workarea open, and the rules can be tried by injecting them live rather than re-importing
+   the zip. If there is no workarea to look at, say so in **No verificado**.
 
 If permission is refused, state in the report exactly which findings are unverified
 inferences rather than measurements.

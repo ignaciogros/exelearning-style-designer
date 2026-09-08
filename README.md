@@ -151,7 +151,41 @@ If you want to start from scratch, go to **Finish / Restart** and select **Delet
 
 ---
 
-### 6. Additional Resources
+### 6. Reviewing Your Style Automatically
+
+The Designer ships a review tool for [Claude Code](https://claude.com/claude-code), in
+`.claude/skills/review-style/`. It is part of the tool, not a personal note: it is versioned
+with the project and available to anyone who clones it.
+
+Ask Claude Code to *review*, *audit* or *check* the style and it audits `theme/` against the
+three exports in `contents/`, in eight phases: inventory, static review of the CSS and the
+JavaScript, typography, the third-party credits in `config.xml`, responsive behaviour, and a
+verification pass in a real browser over all three export formats. It asks which WCAG level
+to apply on every run — AA is the default, and the one `AGENTS.md` requires.
+
+**The output is not a report: it is a corrected `theme/`.** The skill applies the fixes to
+`theme/config.xml`, `theme/style.css` and `theme/style.js`, and reports what it did.
+
+It corrects a style; it does not redesign one. Dead code, invalid CSS, broken selectors,
+JavaScript that throws, missing focus states and minimal contrast nudges are applied
+directly. Anything a designer would *notice* as a design change — a different colour, a
+different font, new spacing, a component added or removed — is proposed and never applied
+without asking.
+
+Two files carry the knowledge, and both are worth reading on their own:
+
+- `references/checks.md` — the check catalogue: how `base.css`, Bootstrap and
+  `exe_effects.css` interact with a style's specificity, what the three export formats do
+  differently, how filter-based dark mode behaves, and what changes inside the eXeLearning
+  editor.
+- `assets/a11y-probe.js` — the contrast probe it runs in the browser.
+
+It needs the previews to be served over HTTP (Apache or Docker, as above) and a browser it
+can drive. A review with `contents/` missing is worthless, so load the sample contents first.
+
+---
+
+### 7. Additional Resources
 
 - Click **Example style** in the application to download an example style.
 - eXeLearning styles official documentation: https://exelearning.github.io/exelearning/development/styles/

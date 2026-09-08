@@ -151,7 +151,43 @@ Si deseas empezar desde cero, ve a **Finish / Restart** y selecciona **Delete al
 
 ---
 
-### 6. Recursos adicionales
+### 6. Revisar tu estilo automáticamente
+
+El Diseñador incluye una herramienta de revisión para [Claude Code](https://claude.com/claude-code),
+en `.claude/skills/review-style/`. Forma parte de la herramienta, no es una nota personal:
+está versionada con el proyecto y disponible para cualquiera que lo clone.
+
+Pídele a Claude Code que *revise*, *audite* o *compruebe* el estilo y auditará `theme/` contra
+las tres exportaciones de `contents/`, en ocho fases: inventario, revisión estática del CSS y
+del JavaScript, tipografía, los créditos de terceros de `config.xml`, comportamiento
+adaptable y una verificación en un navegador real sobre los tres formatos de exportación. En
+cada ejecución pregunta qué nivel WCAG aplicar — AA es el predeterminado, y el que exige
+`AGENTS.md`.
+
+**El resultado no es un informe: es un `theme/` corregido.** El skill aplica los arreglos
+sobre `theme/config.xml`, `theme/style.css` y `theme/style.js`, y luego cuenta lo que hizo.
+
+Corrige un estilo, no lo rediseña. El código muerto, el CSS inválido, los selectores rotos,
+el JavaScript que lanza errores, los estados de foco que faltan y los ajustes mínimos de
+contraste se aplican directamente. Todo aquello que un diseñador *notaría* como un cambio de
+diseño —otro color, otra fuente, otros espaciados, un componente añadido o quitado— se
+propone y nunca se aplica sin preguntar.
+
+Dos archivos concentran el conocimiento, y los dos se pueden leer por su cuenta:
+
+- `references/checks.md` — el catálogo de comprobaciones: cómo interactúan `base.css`,
+  Bootstrap y `exe_effects.css` con la especificidad de un estilo, qué hace distinto cada uno
+  de los tres formatos de exportación, cómo se comporta el modo oscuro por filtro y qué
+  cambia dentro del editor de eXeLearning.
+- `assets/a11y-probe.js` — la sonda de contraste que ejecuta en el navegador.
+
+Necesita que las previsualizaciones se sirvan por HTTP (Apache o Docker, como arriba) y un
+navegador que pueda manejar. Una revisión sin `contents/` no sirve de nada, así que carga
+antes los contenidos de ejemplo.
+
+---
+
+### 7. Recursos adicionales
 
 - Haz clic en **Example style (Estilo de ejemplo)** dentro de la aplicación para descargar un estilo de ejemplo.
 - Documentación oficial de estilos de eXeLearning (en inglés): https://exelearning.github.io/exelearning/development/styles/

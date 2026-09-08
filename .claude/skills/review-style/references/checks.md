@@ -77,13 +77,15 @@ your style.css`. Yours is last, so equal specificity wins.
 | `localStorage` read or write without `try/catch` | §9. It **throws** in a sandboxed iframe or with third-party cookies off. In SCORM/IMS that is not an edge case, it is Safari's default |
 | Parse-time code touching `<body>` | A script running before `</head>` cannot read the format classes of §7 — `<body>` does not exist yet |
 | Parse-time and `init()` out of sync | If one sets a class before first paint, the other must be able to undo it where the feature does not apply |
+| A `.replace()` on a label the application wrote | ⚠️ **The word order is not yours.** A style that rebrands the footer link with `html.replace(' eXeLearning', ' eXeLearning + <brand>')` matches nothing in Basque, whose label is `eXeLearning-ekin egina` — it *starts* with the product name, so the leading space never appears (`translations/messages.eu.xlf` upstream). The replacement silently does not happen and nobody notices. Match the bare token, and check that the subtree really is text: `.html()` of an `<a>` excludes its own `href`, so a token there cannot be hit by accident |
 | Hardcoded interface text | §9. Use `$exe_i18n` — exports are translated. Keys: `menu`, `search`, `more`, `mode_toggler`, `teacher_mode`, `hide`, `download`, `block`, `toggleContent`, and the rest in `libs/common_i18n.js` |
 | A URL rewritten by hand | §9. `$exeExport.setUrlParam(href, name, value)` sets one parameter keeping the rest and the fragment; `null` removes it. See below |
 | A key read from `$exe_i18n` that the export does not define | Gives `undefined` in the UI. Grep `libs/common_i18n.js` |
-| Feature applied in a format where it cannot work | A dark-mode toggle inside an LMS iframe. §7: an intermittent control is worse than no control — disable it for that format rather than letting the browser decide |
+| Feature applied in a format where it cannot work | A dark-mode toggle inside an LMS iframe. §7: an intermittent control is worse than no control — disable it for that format rather than letting the browser decide. The shape that works is a declared setting at the top of the style object, `darkModeToggler: 'web'` with `'web' \| true \| false`, read by the same helper that checks `localStorage`. ⚠️ **It forces a second change**: the parse-time `setMode()` runs before `<body>` exists and cannot know the format, so `init()` must undo what it did — `$('html').removeClass('exe-dark-mode')` in the branch where the feature does not apply. Change one, revisit the other, and verify with a stored `exeDarkMode=on` that the other two formats still come up light |
 | Global namespace pollution | One object (`myTheme`) is the convention. A bare `var x` at top level can collide with the application's |
 | Guard flags that can deadlock | An "in progress" boolean that a failing animation callback never clears freezes the control for good |
-| `$(window).width()` compared to a number | Must match a CSS breakpoint exactly, or behaviour and layout switch at different widths. **Reading the breakpoint back from the CSS instead — `$('#siteNav').css('float') == 'none'` — is the better pattern and not a finding**: it cannot drift |
+| `$(window).width()` compared to a number | Must match a CSS breakpoint exactly, or behaviour and layout switch at different widths. **Reading the breakpoint back from the CSS is the better pattern and not a finding**: it cannot drift. But read a property that actually changes — see the row below |
+| A breakpoint probe reading `float` | ⚠️ **Broken whenever the element is positioned.** `position: fixed`/`absolute` computes `float` to `none`, so `$('#siteNav').css('float') == 'none'` returns `true` at **every** width as soon as the menu is fixed above the breakpoint — and the desktop branch it guards becomes dead code. The symptom is silent: the menu still opens and closes, but the branch that removes `nav=false` never runs. Read `css('position') == 'static'` instead, and **verify at four widths**, not one |
 | jQuery API removed in the bundled version | Check the version first: `contents/*/libs/jquery/`. `.bind()`, `.delegate()`, `.size()` are *deprecated* in jQuery 3 and still work; they are removed in 4. Deprecated-but-working is a suggestion, not a defect — say which it is |
 | Markup built by the JS | The page must stay readable with JS off (§9). Check that no content is *only* reachable through injected markup |
 | Quote style | Single quotes (§1) |
@@ -174,9 +176,44 @@ with the element and without it?**
 - `.page-counter` absent → does whatever was positioned around it reflow? **The single-page
   format never carries one** — the whole project is one document, so there is nothing to
   count. Do not report it as unverified there, and do not write rules that expect it.
-- `#teacher-mode-toggler-wrapper` — injected by the app, never in the HTML. A rule like
-  `body:has(#teacher-mode-toggler-wrapper) .package-title { padding-right: 100px }` is the
-  correct pattern. A bare `padding-right` on `.package-title` is not.
+- `#teacher-mode-toggler-wrapper` — injected by the app, never in the HTML, and ⚠️ **it does
+  not land in the same place in every format**. `exe_export.js` (`teacherMode.addToggler`):
+
+  | Format | Insertion | Title that must make room |
+  | --- | --- | --- |
+  | Single page | `$('.package-header').before(btn)` | `.package-title` |
+  | Website and SCORM | `$('.page-header').prepend(btn)` | `.page-title` |
+
+  So `body:has(#teacher-mode-toggler-wrapper) .package-title { padding-right: 100px }` is
+  **only half right** — it covers single page and leaves the website and SCORM unhandled,
+  which is the shape most styles ship. Two `:has()` rules, one per insertion point, is the
+  correct pattern. A bare `padding-right` on either title is not.
+
+  The wrapper is `float: right`, so it inherits `color` from whatever band it lands in — and
+  the two bands are usually different colours. **Measure the label on both**, at normal text
+  size (4.5:1), not just the heading beside it, which often passes as large text. Same for
+  the switch: `.form-check-input:checked` painted the same colour as the band behind it is a
+  1:1 boundary and fails 1.4.11.
+
+  **How to make it appear** (it is not in the HTML, so there is nothing to grep for in the
+  markup): load the page with **`?teacher-mode=true`** (aliases `?exe-teacher=1`,
+  `?exe-teacher-toggler=1`). That only *shows the switch* — flip it, or dispatch `change`,
+  to get `mode-teacher` on `<html>`. And the app refuses to inject it at all unless the page
+  holds `.box.teacher-only` or `.idevice_node.teacher-only` (`exe_export.js`), so check that
+  the content has some **before** concluding the element is unverifiable. ⚠️ And grep the
+  whole export tree: in the sample content the only `.teacher-only` boxes live in
+  `contents/*/index.html`, so a sweep of `html/` reports the feature as untestable when it is
+  not.
+
+  ⚠️ Two measurement traps once it is on screen, both of which invert the verdict:
+  - **In single page the wrapper is a *sibling* of `.package-header`, not a child**, so the
+    probe climbs to `.exe-content` and reports white-on-white 1:1. It is really painted over
+    the band. Check whether the label's rect falls inside the header's rect and measure
+    against the header's own background.
+  - **In that same layout the header covers the float in the hit test.** `elementsFromPoint`
+    on the switch returns `HEADER.package-header` first — the switch takes no clicks at all.
+    `position: relative` alone does not fix it; an explicit `z-index` does. Run
+    `elementsFromPoint` on both the switch and the label, and confirm the toggle cycles.
 - `#packageLicense` — its class carries *which* licence (`cc-by-sa`, `cc-0`…). Styling one
   variant and not the others leaves the rest unstyled. Check the sprite offsets for each.
 - `#siteUserFooter` — arbitrary author HTML, **including links**. The footer link colour
@@ -224,6 +261,19 @@ Only if the style has one. Which implementation decides the checks.
 **Both:**
 
 - The toggle only makes unambiguous sense on the website format (§7).
+- ⚠️ **The class goes on `<html>`, written at parse time — not on `<body>` from `ready`.**
+  This is what keeps the page from flashing: a script at the end of the style's `.js` runs
+  while the head is still being parsed, so `exe-dark-mode` is on the root element before the
+  first paint. Set it on `<body>` inside `$(function(){})` instead and the reader gets a
+  white page that turns black a moment later, on every single navigation. Check *where* and
+  *when*, not just that a class is applied.
+  The price is that `<body>` does not exist yet, so **the format cannot be read there** — a
+  style that limits the toggle to the website (see `darkModeToggler` in §3) must undo the
+  class from `init()`: `if (!darkMode) $('html').removeClass('exe-dark-mode')`. Verify with
+  `exeDarkMode=on` stored that the other formats come up light **without erasing the stored
+  preference**, which still belongs to the website export.
+  A residual flash in the formats that undo it is the accepted trade-off, and only happens in
+  local preview, where all three exports share `localhost` as their origin.
 - Stored preference is per origin — everything on `localhost` shares it. A preview that
   comes up dark unasked is the stored key, not a CSS bug.
 - The toggle must have an accessible name and a state (`aria-pressed`), and must be
@@ -283,6 +333,16 @@ bar, a navigation menu and a logo band.
   nicety. Check that fixed bars, togglers and the page counter are hidden, that link URLs
   are exposed, that margins reset, and that nothing forces a background the printer must
   render.
+- ⚠️ **Light text stranded on a dropped background is the most common print defect, and the
+  screen gives no hint of it.** Browsers omit background colours unless the reader ticks
+  "Background graphics", but they keep `color`. Every band the style paints — package header,
+  page header, footer, any coloured chip — is `color: #ffffff` on a colour, and prints as
+  **white on white**. The title of the project, the title of the page and the licence footer
+  are the usual casualties, i.e. everything that identifies the document.
+  Enumerate every rule that pairs a light `color` with a `background`, and give each one a
+  print counterpart (`background: none; color: #000000`) or `print-color-adjust: exact` where
+  the surface is load-bearing, as in `.pre-code`. Verify by flipping the print blocks to
+  `all` (Phase 6.7) and **reading the computed `color` against the computed background**.
 - **`@media print` adds no specificity, so its position in the file decides whether it
   works.** A print rule loses to any screen rule that is more specific, and to an equally
   specific one written later. Both are common: a `.exe-content` print reset beaten by a
@@ -377,6 +437,33 @@ makes the real findings harder to see.
 | `display: block !important` on the search box | Fighting an inline style from the application's JS (§9) |
 | A `100vh` with a `calc()` subtracting a bar height | Sticky-footer arithmetic; check the number matches the bar, do not remove it |
 
+### ⚠️ A rule that "does not apply" right after a resize
+
+`getComputedStyle` immediately after changing the viewport width returns the **pre-transition**
+value, and a style that animates the property you are measuring will read exactly as if the
+`@media` rule had not applied at all. `educablue` transitions `background-position` on
+`.nav-buttons` (0.25s) and `base.css` transitions everything on `#made-with-eXe a` (0.5s), so
+a logo measured this way sits at its old offset and looks like a broken cascade.
+
+Before concluding that a rule loses, prove it: change that declaration through the CSSOM
+(`rule.style.setProperty(...)`) and see whether the computed value follows. If it follows, the
+rule wins and your reading was stale.
+
+Waiting is not reliable: CSS transitions advance on the animation timeline, which Chrome
+throttles when the window is not focused, so a value can stay stuck at its start for as long
+as you care to wait. **Turn the transitions off in the page under test before resizing** and
+the first reading is the final one:
+
+```js
+const st = doc.createElement('style');
+st.textContent = '.nav-buttons, #made-with-eXe a { transition: none !important; }';
+doc.head.appendChild(st);
+```
+
+One more thing about measuring in an iframe (Phase 5): Chrome evaluates media
+queries against `innerWidth`, which **includes** the scrollbar, while the
+element you measure is ~15px narrower — say which of the two a number is.
+
 ---
 
 ## 11. Effects (FX) — what `exe_effects.css` now owns
@@ -452,6 +539,20 @@ Two correct shapes, both acceptable:
 .exe-content .fx-pagination .fx-current a { background: #145cb1; color: #ffffff; }
 ```
 
+### `#efefef` is the surface that decides the style's link colour
+
+`exe_effects.css` paints `#efefef` in **five** places: the current tab's label, the tab panel,
+every pagination chip, the paginated page panel and the carousel panel. Three of those hold
+author prose, links included, and the chips are links themselves. So `.exe-content a` lands on
+`#efefef` in any project that uses an effect, and that surface — not white — is what binds the
+link colour: **4.5:1 on `#efefef` needs a relative luminance ≤ 0.153**, appreciably darker than
+what white alone would allow.
+
+Do not try to buy back a brighter link with a scoped rule for the tabs. It is not one special
+case, it is five components and the prose inside three of them; the exception would have to be
+wider than the rule, and the luminance it buys back is a couple of hex steps. Measure on
+`#efefef` and pick one colour.
+
 ### The carousel pagination is not a separate component
 
 Its list carries **both** `fx-carousel-pagination` and `fx-pagination`, and the PR deleted the
@@ -471,3 +572,101 @@ plain text links inside the event list.
 - A style adding `text-decoration: underline` to an FX control now fights the sheet.
 - A style that carried `text-decoration: none` workarounds for these controls can drop them.
 - Removing the underline from `.fx-timeline-minor h3 a` **is** a finding: those are prose links.
+
+---
+
+## 12. Inside the eXeLearning editor
+
+The exports are only half the surface. The same `style.css` is loaded into the **workarea**,
+and it is the half nobody looks at, because checking it means importing the `.zip` into
+eXeLearning — the Style Designer cannot show it. The application's own reference is
+`doc/development/styles.md` in the `exelearning` repository; read it before touching any of
+this.
+
+**The editor content pane is `<section id="node-content-container" class="exe-content …">`.**
+Both on one element, so **every `.exe-content` rule is already live in the editor** — that is
+why a style leaks there when its content rules are unscoped (§8), and equally why the style
+is responsible for how the editor looks.
+
+⚠️ **But the workarea's `main.css` writes `#node-content-container.exe-content …`**, which
+outranks any plain `.exe-content` rule. Where the editor disagrees with the preview, that is
+almost always the reason. Match the app's own selector to override it — equal specificity is
+enough, since the style loads last:
+
+```css
+#node-content-container.exe-content .box-head .exe-icon img { … }
+```
+
+### Icon colour — check it in **every** style
+
+⚠️ **The application declares `--exe-icon-color: #6E9F41` itself.** A style that does not
+override it gets that green in the icon picker's General icons, whatever its own palette is —
+it is not a missing value, it is an inherited one. The resolution order, from
+`blockNode.js` (`getCurrentThemeIconColor`), read off the block header, the title and the
+icon element in turn:
+
+```
+--exe-icon-picker-color  ||  --exe-icon-color  ||  --icon-primary  ||  computed color  ||  #6E9F41
+```
+
+- Declare `--exe-icon-color` as the colour of the style's own `icons/` artwork — sample the
+  PNG, do not guess from the palette; they are often not the same colour.
+- `--exe-icon-picker-color` is needed **only when `--exe-icon-color` is light**, because the
+  picker paints its chips on a light background. A dark icon colour needs one variable, not
+  two.
+- The variable reaches General icons only (inline SVG on `currentColor`). Style icons are
+  `<img>`: matching them in the picker takes a `filter`, and only on the `img`, never on the
+  chip — the chip has a background and a filter there paints a block over the icon.
+
+### General Icons — the group a style forgets
+
+The picker offers two groups and a style has to serve **both**. Style icons are the `<img>`
+artwork in `icons/`; General icons are Material Symbols, a
+`<span class="exe-material-icon">` painted with `currentColor` through a CSS mask. A style
+that only ever styles `.box-icon img` leaves the second group at the application defaults, and
+the two end up different sizes on the same page.
+
+| Check | What to do |
+| --- | --- |
+| The style sizes `.box-icon img` but never `.exe-material-icon` | Add the span, at the size the artwork actually ends up at — **not** the raw `width` written for the `img` when a `scale` is also in play |
+| The span rule drops `transform: scale(1.2)` | **Keep it.** Material Symbols are drawn in a 20px live area on a 24px grid, so without it the glyph comes out ~17% smaller than an edge-to-edge PNG in the same box |
+| The style uses the `scale` property anywhere in the chain | ⚠️ `scale` **composes with** `transform` instead of replacing it: `scale: .9` plus `transform: scale(1.2)` leaves the element at `0.9 × 1.2`. Do the arithmetic |
+| Only a `.exe-content …` selector | The workarea writes `#node-content-container.exe-content .box-head .exe-material-icon` (1,3,0), which outranks it. One rule carrying both selectors covers editor and export |
+| Filter-based dark mode re-inverting `:is(img, video, iframe)` | The span is **not** an `<img>`, so it is not in that list. Add it **only when the Style artwork is light**; when `--exe-icon-color` is dark and meant to invert to light, leaving it out is correct. Either way **measure both groups against the box header** and report how far apart they land — a small gap is not worth a rule |
+| The export carries no `exe-material-icon` rule at all | Not a style defect: exports produced before the feature existed have none. Emulate the current default in the browser to test the style's rule, and say the content could not exercise it |
+
+⚠️ General icons are painted with `mask-image`, which **does not work over `file://`** (§5).
+An export opened from disk loses them while the `<img>` Style icons survive. That is the
+application's technique, not the style's — report it once.
+
+### Text colour — a style that declares none inherits two different hosts
+
+The editor's body colour and the export's are not the same (`#374151` against Bootstrap's
+`#212529` at the time of writing). A style that never sets `color` therefore shows the same
+box title in two colours, and the author sees the difference the moment they preview.
+Declaring it once on `.exe-content` fixes both and changes nothing in the export.
+
+### What to check, and how, without re-importing the zip
+
+Re-importing after every edit is slow, and the editor caches the style. **Inject the
+candidate rules into the live workarea and measure**, exactly as with runtime-injected markup:
+
+```js
+var s = document.createElement('style'); s.id = 'probe';
+s.textContent = '…the rules you are proposing…';
+document.head.appendChild(s);
+```
+
+Then compare against the same element in the served export. The checklist:
+
+| Check | Where it usually goes wrong |
+| --- | --- |
+| Box title colour | Inherited from the host; differs between editor and export |
+| Box icon size | `main.css` sets `height: 30px` on `.exe-icon img`, and the button's own `padding` caps the image through `img { max-width: 100% }` — so overriding the width alone is not enough |
+| Icon picker colour | `--exe-icon-color` left at the application's green |
+| Style leaking into the editor chrome | Content rules not scoped to `.exe-content` (§8) |
+| `!important` in an editor rule | Needs the §1 comment naming what it fights, like any other |
+
+⚠️ Read the block's real geometry before "fixing" a size: the editor's box header carries
+controls the export does not, so matching the preview exactly can push its height. Measure
+`.box-head` before and after and say what it did.
