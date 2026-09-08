@@ -153,11 +153,21 @@ If you want to start from scratch, go to **Finish / Restart** and select **Delet
 
 ### 6. Reviewing Your Style Automatically
 
-The Designer ships a review tool for [Claude Code](https://claude.com/claude-code), in
-`.claude/skills/review-style/`. It is part of the tool, not a personal note: it is versioned
-with the project and available to anyone who clones it.
+The Designer ships an **agent skill** that reviews a style, in `.agents/skills/review-style/`.
+It is part of the tool, not a personal working note: it is versioned with the project and
+available to anyone who clones it.
 
-Ask Claude Code to *review*, *audit* or *check* the style and it audits `theme/` against the
+It follows the `SKILL.md` convention and sits in the vendor-neutral `.agents/` folder rather
+than under any one assistant's own directory, for the same reason `AGENTS.md` sits at the
+root: what it knows is about eXeLearning, not about the assistant reading it. It was written
+and tested with [Claude Code](https://claude.com/claude-code).
+
+Claude Code only auto-discovers skills under `.claude/skills/`, so the repository also ships
+a single pointer file, `.claude/skills/review-style/SKILL.md`, that does nothing but name the
+real path. That is the only file here that assumes a particular assistant. With any other
+tool, point it at `.agents/skills/review-style/SKILL.md` directly.
+
+Ask it to *review*, *audit* or *check* the style and it audits `theme/` against the
 three exports in `contents/`, in eight phases: inventory, static review of the CSS and the
 JavaScript, typography, the third-party credits in `config.xml`, responsive behaviour, and a
 verification pass in a real browser over all three export formats. It asks which WCAG level

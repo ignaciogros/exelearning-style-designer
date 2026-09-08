@@ -153,11 +153,21 @@ Si deseas empezar desde cero, ve a **Finish / Restart** y selecciona **Delete al
 
 ### 6. Revisar tu estilo automáticamente
 
-El Diseñador incluye una herramienta de revisión para [Claude Code](https://claude.com/claude-code),
-en `.claude/skills/review-style/`. Forma parte de la herramienta, no es una nota personal:
-está versionada con el proyecto y disponible para cualquiera que lo clone.
+El Diseñador incluye un **skill de agente** que revisa un estilo, en
+`.agents/skills/review-style/`. Forma parte de la herramienta, no es una nota de trabajo
+personal: está versionado con el proyecto y disponible para cualquiera que lo clone.
 
-Pídele a Claude Code que *revise*, *audite* o *compruebe* el estilo y auditará `theme/` contra
+Sigue la convención `SKILL.md` y vive en la carpeta neutral `.agents/`, no bajo el directorio
+propio de ningún asistente, por la misma razón por la que `AGENTS.md` está en la raíz: lo que
+sabe es de eXeLearning, no del asistente que lo lee. Se escribió y se probó con
+[Claude Code](https://claude.com/claude-code).
+
+Claude Code solo descubre skills bajo `.claude/skills/`, así que el repositorio incluye además
+un único archivo puntero, `.claude/skills/review-style/SKILL.md`, que no hace más que indicar
+la ruta real. Es el único archivo del proyecto que da por supuesto un asistente concreto. Con
+cualquier otra herramienta, señálale directamente `.agents/skills/review-style/SKILL.md`.
+
+Pídele que *revise*, *audite* o *compruebe* el estilo y auditará `theme/` contra
 las tres exportaciones de `contents/`, en ocho fases: inventario, revisión estática del CSS y
 del JavaScript, tipografía, los créditos de terceros de `config.xml`, comportamiento
 adaptable y una verificación en un navegador real sobre los tres formatos de exportación. En

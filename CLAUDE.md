@@ -17,9 +17,28 @@ Be explicit about which one you are doing, because the rules differ:
 working files and the third is the per-style rationale, none of them repository content. A
 commit that adds them is a mistake.
 
+## Agent skills live in `.agents/`, not `.claude/`
+
+**This project keeps its agent skills in `.agents/skills/<name>/`**, alongside the root
+`AGENTS.md`, and nothing the repository ships lives under `.claude/`. The reason is the same
+one that put `AGENTS.md` at the root rather than folding it into this file: the knowledge in
+those files is about eXeLearning, not about any one assistant, and a contributor using a
+different tool should get it too. `.claude/` in a checkout holds only that developer's own
+local settings, which git ignores.
+
+⚠️ **Claude Code does not discover skills under `.agents/skills/`** — verified on 2.1.263,
+where `/review-style` did not appear until a stub was added. So the repository ships exactly
+one file under `.claude/`: `.claude/skills/review-style/SKILL.md`, a pointer whose only job
+is to name the real path. It carries no instructions of its own.
+
+That stub is the whole of the compatibility layer, and the rule for it is narrow: **do not
+grow it**. If the skill is not being found, the fix is never to move the real files back or
+to copy their content into the stub — that creates two sources of truth that drift. When a
+future version reads `.agents/skills/` directly, delete the stub and nothing else.
+
 ## The review skill is part of the tool
 
-`.claude/skills/review-style/` is versioned with the project, and deliberately so: it is a
+`.agents/skills/review-style/` is versioned with the project, and deliberately so: it is a
 feature of the Style Designer, documented in both READMEs, not a personal working note. It
 covers job 1 only.
 

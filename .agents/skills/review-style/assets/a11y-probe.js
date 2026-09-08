@@ -1,7 +1,8 @@
 /*
  * a11y-probe — measures one exported eXeLearning page in the browser.
  *
- * Run through mcp__claude-in-chrome__javascript_tool on a *served* page (never file://).
+ * Evaluate it in a live tab on a *served* page (never file://) — any browser-automation
+ * tool that runs JavaScript will do, or the devtools console by hand.
  * Returns JSON. Set the level first; AA is the default:
  *     window.__A11Y_LEVEL = 'AAA';
  *
