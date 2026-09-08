@@ -13,8 +13,31 @@ Be explicit about which one you are doing, because the rules differ:
 2. **Maintaining the Style Designer application itself** — the PHP harness (`index.php`,
    `upload/`, `download/`, `files/`). Rare. `AGENTS.md` does not cover it; this file does.
 
-`theme/` and `contents/` are in `.gitignore`: they are the designer's working files, not
-repository content. A commit that adds them is a mistake.
+`theme/`, `contents/` and `notes/` are in `.gitignore`: the first two are the designer's
+working files and the third is the per-style rationale, none of them repository content. A
+commit that adds them is a mistake.
+
+## The review skill is part of the tool
+
+`.claude/skills/review-style/` is versioned with the project, and deliberately so: it is a
+feature of the Style Designer, documented in both READMEs, not a personal working note. It
+covers job 1 only.
+
+Invoke it for any request to review, audit, check or validate a style, and before building a
+`.zip` to ship. It corrects `theme/` in place across eight phases and ends with a browser
+pass over the three formats.
+
+Three files, and none of them stands alone — `SKILL.md` loads the other two by name:
+
+- `SKILL.md` — the procedure, and the boundary between what it fixes directly and what it
+  must ask about first.
+- `references/checks.md` — the check catalogue. This is the part not to improvise: it holds
+  what is true about `base.css`, Bootstrap, `exe_effects.css` and the workarea's `main.css`,
+  which is knowledge about eXeLearning's exports rather than about any one style.
+- `assets/a11y-probe.js` — the contrast probe.
+
+Neither `SKILL.md` nor `checks.md` names a specific style, and they should stay that way.
+Findings about a particular style go in `notes/<style>.md`, which is not versioned.
 
 ## Running it
 
