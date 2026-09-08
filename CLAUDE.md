@@ -66,10 +66,10 @@ meaningful against 4.0.4 markup: the effects components read a focus colour from
 the teacher-mode switch exists, General Icons are Material Symbols, and navigation goes
 through the core's URL helper. None of that is in an older export.
 
-⚠️ **One leftover contradicts that claim, and it has not been removed.** `upload/index.php`
-still renames eXeLearning **3**'s `default.js` / `content.css` and rewrites the old
-`<link>`/`<script>` paths (the `$isV3` branch). It is live code for a version the tool no
-longer claims to support. Removing it is a decision for the author — do not tidy it away.
+The eXeLearning **3** compatibility path was removed for this release: `upload/index.php` no
+longer renames `default.js` / `content.css`, and the four strings it rewrites in the exported
+HTML are now literals. **Do not reintroduce it.** A 3.x export loaded now simply fails to wire
+up, which is the intended behaviour.
 
 The bundled `files/fixtures/*.zip` report `exe_version 0.0.0-alpha`. That is the author's
 local build carrying the changes that ship in 4.0.4, **not** an older export: it is the
@@ -108,8 +108,6 @@ and then:
 
 - wipes `contents/` and `theme/` and extracts each zip into `contents/{page,scorm,web}/`;
 - copies `contents/web/theme/` up to the root as `theme/` — **the editable copy**;
-- renames eXeLearning 3's `default.js` / `content.css` to `style.js` / `style.css` — the
-  `$isV3` leftover described above, for a version the tool no longer claims to support;
 - rewrites every exported `.html` so the `<link>` and `<script>` for the theme are written
   by `document.write()` pointing at **`../../../theme/style.css`** with a `Date.now()`
   cache buster — this rewrite is what makes editing the root `theme/` show up in all three
