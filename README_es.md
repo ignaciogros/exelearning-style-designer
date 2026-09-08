@@ -202,7 +202,9 @@ Los siguientes recursos de terceros están incluidos en este proyecto:
   Licencia: AGPL (igual que este proyecto)
 
 - **Fuente Open Sans:** `files/example.zip/fonts/*`
-  Fuente: [Google Fonts](https://fonts.google.com/specimen/Open+Sans)
-  Licencia: Apache License, Version 2.0
+  Copyright 2020 The Open Sans Project Authors
+  Fuente: [Open Sans en GitHub](https://github.com/googlefonts/opensans)
+  Licencia: [SIL Open Font License, versión 1.1](https://openfontlicense.org/) — el texto
+  completo viaja dentro del zip, en `fonts/OFL.txt`
 
 > Todos los demás archivos del proyecto han sido creados por [@ignaciogros](https://github.com/ignaciogros) y tienen licencia AGPL.

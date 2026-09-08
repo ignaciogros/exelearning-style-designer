@@ -201,8 +201,10 @@ The following third-party resources are included in this project:
   Source: [eXeLearning GitHub](https://github.com/exelearning/exelearning/)
   License: AGPL (same as this project)
 
-- **Open Sans Font:** `files/example.zip/fonts/*`. 
-  Source: [Google Fonts](https://fonts.google.com/specimen/Open+Sans)
-  License: Apache License, Version 2.0
+- **Open Sans Font:** `files/example.zip/fonts/*`
+  Copyright 2020 The Open Sans Project Authors
+  Source: [Open Sans on GitHub](https://github.com/googlefonts/opensans)
+  License: [SIL Open Font License, Version 1.1](https://openfontlicense.org/) — the full text
+  ships inside the zip, as `fonts/OFL.txt`
 
 > All other files in this project were created by [@ignaciogros](https://github.com/ignaciogros) and are licensed under AGPL.
