@@ -112,6 +112,38 @@ It is a pattern several styles inherited from one another, so **check it even wh
 style looks tidy**, and check the removal branch as well as the addition — dropping the
 query silently breaks LMS tracking and teacher mode, and nothing on screen says so.
 
+**Acceptance test — run these seven through both branches.** Reading the code is not enough;
+each defect below survives a casual click because the sample content has no other parameters.
+
+```
+page.html                       page.html?nav=false
+page.html#sec3                  page.html?nav=false#sec3
+page.html?exe-teacher=1         page.html?a=1&b=2
+page.html?exe-teacher=1#sec3
+```
+
+| Input and branch | Defective result | What it proves |
+| --- | --- | --- |
+| `?exe-teacher=1` + REMOVE | `page.html` | drops the whole query |
+| `?nav=false#sec3` + REMOVE | `page.html` | drops the fragment too |
+| `#sec3` + ADD | `page.html#sec3?nav=false` | parameter lands inside the fragment |
+| `?exe-teacher=1#sec3` + ADD | `...?exe-teacher=1#sec3&nav=false` | same, with `&` |
+| `?exe-teacher=1` + ADD | `...?exe-teacher=1?nav=false` | second `?`, malformed URL |
+
+ADD must be idempotent: applying it twice does not duplicate the parameter. And when
+filtering, compare **the key**, not the string — `p.split('=')[0] != 'nav'`, never
+`p != 'nav=false'`, which lets `nav=FALSE` and a repeated pair through.
+
+Detection has its own four, all of which must return `false`:
+
+```
+page.html#nav=false      page.html?nav=falsey
+page.html?xnav=false     page.html?q=nav%3Dfalse
+```
+
+⚠️ **Fix reading and writing in the same pass.** Correcting one and not the other leaves the
+two out of sync, which is harder to diagnose than either defect alone.
+
 **Injected markup must be accessible.** A `<button>` the style builds needs an accessible
 name (visible text, or a visually-hidden `<span>`, or `aria-label` from `$exe_i18n`), and a
 toggle needs `aria-expanded` kept in sync. A `<div>` with a click handler is not a button:
@@ -311,8 +343,8 @@ Only if the style has one. Which implementation decides the checks.
   (`eng_aprenderaprender.png` vs `udl_eng_aprenderaprender.svg` vs the generic `info.png`)
   and the extension (an SVG never loads into `<img src="*.png">`). **Report it once, in one
   line, and stop there** — never rename, convert or move a style's icons to match one export.
-  That would make the style wrong for every other project. Tracked in the repository's
-  `TODO.md` as an application-side problem.
+  That would make the style wrong for every other project. It belongs to the application:
+  the style is not the broken part.
 - Images referenced nowhere are dead weight in the `.zip` — report, do not delete
   unilaterally (an icon may be for an iDevice absent from *this* project).
 
